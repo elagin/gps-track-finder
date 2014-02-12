@@ -140,7 +140,6 @@ namespace GpsTrackFinder
 		/// Парсинг PLT-файла.</summary>
 		public static TrackStat ParsePlt(string aData, GpsPoint searchPoint, int aDist, string fileName)
 		{
-			double length = 0;
 			GpsPoint prevPoint = null;
 			TrackStat stat = new TrackStat();
 

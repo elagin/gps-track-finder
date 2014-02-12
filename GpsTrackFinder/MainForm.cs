@@ -29,6 +29,7 @@ using System.Windows.Forms;
 using System.Globalization;
 using System.IO;
 using System.Diagnostics;
+using System.Collections;
 
 namespace GpsTrackFinder
 {
@@ -44,11 +45,11 @@ namespace GpsTrackFinder
 			InitializeComponent();
 			fillCtrls();
 			listView1.View = View.Details;
-			listView1.Columns.Add("Имя файла", 500, HorizontalAlignment.Left);
-			listView1.Columns.Add("Минимальное расстояние (км.)", 160, HorizontalAlignment.Left);
-			listView1.Columns.Add("Длинна трека (км.)", 100, HorizontalAlignment.Left);
-			listView1.Columns.Add("Количество точек", 100, HorizontalAlignment.Left);
-			listView1.Columns.Add("Точек на метр", 100, HorizontalAlignment.Left);
+			listView1.Columns.Add(new ColHeader("Имя файла", 500, HorizontalAlignment.Left, true));
+			listView1.Columns.Add(new ColHeader("Минимальное расстояние (км.)", 160, HorizontalAlignment.Left, true));
+			listView1.Columns.Add(new ColHeader("Длинна трека (км.)", 100, HorizontalAlignment.Left, true));
+			listView1.Columns.Add(new ColHeader("Количество точек", 100, HorizontalAlignment.Left, true));
+			listView1.Columns.Add(new ColHeader("Точек на метр", 100, HorizontalAlignment.Left, true));
 		}
 
 		/// <summary>
@@ -216,6 +217,25 @@ namespace GpsTrackFinder
 				DialogResult resDlg = about.ShowDialog();
 			}
 		}
+
+		private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
+		{
+			ColHeader clickedCol = (ColHeader)this.listView1.Columns[e.Column];
+			clickedCol.ascending = !clickedCol.ascending;
+			int numItems = this.listView1.Items.Count;
+			this.listView1.BeginUpdate();
+			ArrayList SortArray = new ArrayList();
+			for (int i = 0; i < numItems; i++)
+				SortArray.Add(new SortWrapper(this.listView1.Items[i], e.Column));
+
+			SortArray.Sort(0, SortArray.Count, new SortWrapper.SortComparer(clickedCol.ascending));
+
+			this.listView1.Items.Clear();
+			for (int i = 0; i < numItems; i++)
+				this.listView1.Items.Add(((SortWrapper)SortArray[i]).sortItem);
+
+			this.listView1.EndUpdate();
+		}
 	}
 
 	/// <summary>
@@ -235,6 +255,88 @@ namespace GpsTrackFinder
 			/// <summary>
 			///  Generates the text shown in the combo box.</summary>
 			return Name;
+		}
+	}
+
+	// An instance of the SortWrapper class is created for
+	// each item and added to the ArrayList for sorting.
+	public class SortWrapper
+	{
+		internal ListViewItem sortItem;
+		internal int sortColumn;
+
+		// A SortWrapper requires the item and the index of the clicked column.
+		public SortWrapper(ListViewItem Item, int iColumn)
+		{
+			sortItem = Item;
+			sortColumn = iColumn;
+		}
+
+		// Text property for getting the text of an item.
+		public string Text
+		{
+			get
+			{
+				return sortItem.SubItems[sortColumn].Text;
+			}
+		}
+
+		// Implementation of the IComparer
+		// interface for sorting ArrayList items.
+		public class SortComparer : IComparer
+		{
+			bool ascending;
+
+			// Constructor requires the sort order;
+			// true if ascending, otherwise descending.
+			public SortComparer(bool asc)
+			{
+				this.ascending = asc;
+			}
+
+			// Implemnentation of the IComparer:Compare method for comparing two objects.
+			public int Compare(object x, object y)
+			{
+				SortWrapper xItem = (SortWrapper)x;
+				SortWrapper yItem = (SortWrapper)y;
+
+				CultureInfo invC = CultureInfo.InvariantCulture;
+
+				string xText = xItem.sortItem.SubItems[xItem.sortColumn].Text;
+				string yText = yItem.sortItem.SubItems[yItem.sortColumn].Text;
+
+				//Пока самый быстрый вариант
+				if(Microsoft.VisualBasic.Information.IsNumeric(xText[0]))
+				{
+					double xD = Convert.ToDouble(myTrim(xText), invC);
+					double yD = Convert.ToDouble(myTrim(yText), invC);
+					int newRes = (xD > yD) ? 1 : -1;
+					return newRes * (this.ascending ? 1 : -1);
+				}
+				else
+					return xText.CompareTo(yText) * (this.ascending ? 1 : -1);
+			}
+
+			private string myTrim(string val)
+			{
+				val = val.Replace(" ", string.Empty);
+				return val;
+			}
+		}
+	}
+
+	// The ColHeader class is a ColumnHeader object with an
+	// added property for determining an ascending or descending sort.
+	// True specifies an ascending order, false specifies a descending order.
+	public class ColHeader : ColumnHeader
+	{
+		public bool ascending;
+		public ColHeader(string text, int width, HorizontalAlignment align, bool asc)
+		{
+			this.Text = text;
+			this.Width = width;
+			this.TextAlign = align;
+			this.ascending = asc;
 		}
 	}
 }
