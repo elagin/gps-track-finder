@@ -37,6 +37,7 @@ namespace GpsTrackFinder
 		/// <summary>
 		/// Хранит настройки.</summary>
 		private Settings settings = new Settings("config");	// Настройки
+		private int divider = 1000;
 
 		public MainForm()
 		{
@@ -45,6 +46,9 @@ namespace GpsTrackFinder
 			listView1.View = View.Details;
 			listView1.Columns.Add("Имя файла", 500, HorizontalAlignment.Left);
 			listView1.Columns.Add("Минимальное расстояние (км.)", 160, HorizontalAlignment.Left);
+			listView1.Columns.Add("Длинна трека (км.)", 100, HorizontalAlignment.Left);
+			listView1.Columns.Add("Количество точек", 100, HorizontalAlignment.Left);
+			listView1.Columns.Add("Точек на метр", 100, HorizontalAlignment.Left);
 		}
 
 		/// <summary>
@@ -132,9 +136,12 @@ namespace GpsTrackFinder
 				ListViewItem row = new ListViewItem(file.FullName);
 
 				GpsPoint searchPoint = new GpsPoint(settings.CentralPoint.Lat, settings.CentralPoint.Lon);
-				double dist = Drivers.ParsePlt("", searchPoint, settings.Distaice, file.FullName);
+				TrackStat stat = Drivers.ParsePlt("", searchPoint, settings.Distaice, file.FullName);
 
-				row.SubItems.Add(String.Format("{0:N0}", dist));
+				row.SubItems.Add(String.Format("{0:N0}", stat.MinDist));
+				row.SubItems.Add(String.Format("{0:N0}", stat.Length));
+				row.SubItems.Add(String.Format("{0:N0}", stat.Points));
+				row.SubItems.Add(String.Format("{0:N2}", stat.Points / (stat.Length / divider)));
 				listView1.Items.Add(row);
 			}
 		}
@@ -145,6 +152,7 @@ namespace GpsTrackFinder
 		{
 			FolderBrowserDialog dlg = new FolderBrowserDialog();
 			dlg.Description = "Поиск папки";
+			dlg.SelectedPath = textBoxFindFolder.Text;
 			DialogResult result = dlg.ShowDialog();
 			if (result == DialogResult.OK)
 				return dlg.SelectedPath;

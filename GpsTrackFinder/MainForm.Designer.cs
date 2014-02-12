@@ -61,25 +61,27 @@ namespace GpsTrackFinder
 			this.buttonCopyPath = new System.Windows.Forms.Button();
 			this.buttonOpenFolder = new System.Windows.Forms.Button();
 			this.buttonAbout = new System.Windows.Forms.Button();
+			this.label2 = new System.Windows.Forms.Label();
+			this.label3 = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
 			// textBoxLat
 			// 
-			this.textBoxLat.Location = new System.Drawing.Point(53, 26);
+			this.textBoxLat.Location = new System.Drawing.Point(50, 26);
 			this.textBoxLat.Name = "textBoxLat";
 			this.textBoxLat.Size = new System.Drawing.Size(100, 20);
 			this.textBoxLat.TabIndex = 0;
 			// 
 			// textBoxLon
 			// 
-			this.textBoxLon.Location = new System.Drawing.Point(217, 27);
+			this.textBoxLon.Location = new System.Drawing.Point(199, 27);
 			this.textBoxLon.Name = "textBoxLon";
 			this.textBoxLon.Size = new System.Drawing.Size(100, 20);
 			this.textBoxLon.TabIndex = 1;
 			// 
 			// textBoxDistance
 			// 
-			this.textBoxDistance.Location = new System.Drawing.Point(347, 27);
+			this.textBoxDistance.Location = new System.Drawing.Point(313, 27);
 			this.textBoxDistance.Name = "textBoxDistance";
 			this.textBoxDistance.Size = new System.Drawing.Size(100, 20);
 			this.textBoxDistance.TabIndex = 2;
@@ -87,7 +89,7 @@ namespace GpsTrackFinder
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(344, 11);
+			this.label1.Location = new System.Drawing.Point(310, 11);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(83, 13);
 			this.label1.TabIndex = 3;
@@ -95,14 +97,17 @@ namespace GpsTrackFinder
 			// 
 			// textBoxFindFolder
 			// 
-			this.textBoxFindFolder.Location = new System.Drawing.Point(43, 85);
+			this.textBoxFindFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.textBoxFindFolder.Location = new System.Drawing.Point(12, 82);
 			this.textBoxFindFolder.Name = "textBoxFindFolder";
-			this.textBoxFindFolder.Size = new System.Drawing.Size(704, 20);
+			this.textBoxFindFolder.Size = new System.Drawing.Size(829, 20);
 			this.textBoxFindFolder.TabIndex = 4;
 			// 
 			// buttonBrowse
 			// 
-			this.buttonBrowse.Location = new System.Drawing.Point(770, 85);
+			this.buttonBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.buttonBrowse.Location = new System.Drawing.Point(847, 79);
 			this.buttonBrowse.Name = "buttonBrowse";
 			this.buttonBrowse.Size = new System.Drawing.Size(75, 23);
 			this.buttonBrowse.TabIndex = 5;
@@ -112,6 +117,8 @@ namespace GpsTrackFinder
 			// 
 			// buttonStart
 			// 
+			this.buttonStart.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.buttonStart.Location = new System.Drawing.Point(430, 123);
 			this.buttonStart.Name = "buttonStart";
 			this.buttonStart.Size = new System.Drawing.Size(75, 23);
@@ -122,9 +129,9 @@ namespace GpsTrackFinder
 			// 
 			// listView1
 			// 
-			this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.listView1.FullRowSelect = true;
 			this.listView1.GridLines = true;
 			this.listView1.ImeMode = System.Windows.Forms.ImeMode.NoControl;
@@ -145,13 +152,14 @@ namespace GpsTrackFinder
 			// comboBoxLon
 			// 
 			this.comboBoxLon.FormattingEnabled = true;
-			this.comboBoxLon.Location = new System.Drawing.Point(176, 26);
+			this.comboBoxLon.Location = new System.Drawing.Point(161, 26);
 			this.comboBoxLon.Name = "comboBoxLon";
 			this.comboBoxLon.Size = new System.Drawing.Size(35, 21);
 			this.comboBoxLon.TabIndex = 9;
 			// 
 			// buttonCopyPath
 			// 
+			this.buttonCopyPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.buttonCopyPath.Location = new System.Drawing.Point(53, 509);
 			this.buttonCopyPath.Name = "buttonCopyPath";
 			this.buttonCopyPath.Size = new System.Drawing.Size(133, 23);
@@ -162,6 +170,7 @@ namespace GpsTrackFinder
 			// 
 			// buttonOpenFolder
 			// 
+			this.buttonOpenFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.buttonOpenFolder.Location = new System.Drawing.Point(228, 509);
 			this.buttonOpenFolder.Name = "buttonOpenFolder";
 			this.buttonOpenFolder.Size = new System.Drawing.Size(133, 23);
@@ -172,7 +181,8 @@ namespace GpsTrackFinder
 			// 
 			// buttonAbout
 			// 
-			this.buttonAbout.Location = new System.Drawing.Point(829, 36);
+			this.buttonAbout.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.buttonAbout.Location = new System.Drawing.Point(847, 27);
 			this.buttonAbout.Name = "buttonAbout";
 			this.buttonAbout.Size = new System.Drawing.Size(75, 23);
 			this.buttonAbout.TabIndex = 12;
@@ -180,11 +190,31 @@ namespace GpsTrackFinder
 			this.buttonAbout.UseVisualStyleBackColor = true;
 			this.buttonAbout.Click += new System.EventHandler(this.buttonAbout_Click);
 			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Location = new System.Drawing.Point(12, 11);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(48, 13);
+			this.label2.TabIndex = 13;
+			this.label2.Text = "Широта:";
+			// 
+			// label3
+			// 
+			this.label3.AutoSize = true;
+			this.label3.Location = new System.Drawing.Point(158, 11);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(53, 13);
+			this.label3.TabIndex = 14;
+			this.label3.Text = "Долгота:";
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(934, 544);
+			this.Controls.Add(this.label3);
+			this.Controls.Add(this.label2);
 			this.Controls.Add(this.buttonAbout);
 			this.Controls.Add(this.buttonOpenFolder);
 			this.Controls.Add(this.buttonCopyPath);
@@ -221,6 +251,8 @@ namespace GpsTrackFinder
 		private System.Windows.Forms.Button buttonCopyPath;
 		private System.Windows.Forms.Button buttonOpenFolder;
 		private System.Windows.Forms.Button buttonAbout;
+		private System.Windows.Forms.Label label2;
+		private System.Windows.Forms.Label label3;
 	}
 }
 

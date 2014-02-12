@@ -28,12 +28,48 @@ using System.Globalization;
 
 namespace GpsTrackFinder
 {
+	public class TrackStat
+	{
+		public TrackStat()
+		{
+			_minDist = double.MaxValue;
+		}
+
+		private double _length;
+		private double _minDist;
+		private int _points;
+
+		public double Length
+		{
+			get { return _length; }
+			set { _length = value; }
+		}
+
+		public double MinDist
+		{
+			get { return _minDist; }
+			set { _minDist = value; }
+		}
+
+		public int Points
+		{
+			get { return _points; }
+			set { _points = value; }
+		}
+	}
+
 	/// <summary>
 	/// Класс для хранения географической координаты.</summary>
 	public class GpsPoint
 	{
 		private double _lat;
 		private double _lon;
+
+		public GpsPoint(GpsPoint ob)
+		{
+			this._lat = ob._lat;
+			this._lon = ob._lon;
+		}
 
 		public GpsPoint()
 		{
@@ -71,7 +107,7 @@ namespace GpsTrackFinder
 	class Drivers
 	{
 		/// <summary>
-		/// Расчет расстояния (в километрах) между двумя географическими координатами.</summary>
+		/// Расчет расстояния (в метрах) между двумя географическими координатами.</summary>
 		// http://gis-lab.info/qa/great-circles.html
 		public static double calcDist(GpsPoint first, GpsPoint second)
 		{
@@ -97,14 +133,17 @@ namespace GpsTrackFinder
 			double x = sl1 * sl2 + cl1 * cl2 * cdelta;
 			double ad = Math.Atan2(y, x);
 			double dist = ad * rad;
-			return dist / 1000;
+			return dist;
 		}
 
 		/// <summary>
 		/// Парсинг PLT-файла.</summary>
-		public static double ParsePlt(string aData, GpsPoint searchPoint, int aDist, string fileName)
+		public static TrackStat ParsePlt(string aData, GpsPoint searchPoint, int aDist, string fileName)
 		{
-			double min_dist = Double.MaxValue;
+			double length = 0;
+			GpsPoint prevPoint = null;
+			TrackStat stat = new TrackStat();
+
 			try
 			{
 				using (StreamReader file = new StreamReader(fileName))
@@ -117,19 +156,28 @@ namespace GpsTrackFinder
 						string line = file.ReadLine();
 						string[] split = line.Split(',');
 						GpsPoint tmp = new GpsPoint(split[0], split[1]);
+
+						if (prevPoint != null)
+						{
+							stat.Length += calcDist(prevPoint, tmp);
+							prevPoint = tmp;
+						}
+						else
+							prevPoint = tmp;
+
+						stat.Points++;
 						double dist = calcDist(searchPoint, tmp);
-						if (min_dist > dist)
-							min_dist = dist;
+						if (stat.MinDist > dist)
+							stat.MinDist = dist;
 					}
-					return min_dist;
 				}
 			}
 			catch (Exception ex)
 			{
 				string caption = "Произошла ошибка при работе с файлом: " + fileName;
 				var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return 0;
 			}
+			return stat;
 		}
 	}
 }
