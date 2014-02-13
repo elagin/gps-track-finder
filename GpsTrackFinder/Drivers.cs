@@ -38,6 +38,13 @@ namespace GpsTrackFinder
 		private double _length;
 		private double _minDist;
 		private int _points;
+		private string _fileName;
+
+		public string FileName
+		{
+			get { return _fileName; }
+			set { _fileName = value; }
+		}
 
 		public double Length
 		{
@@ -56,6 +63,7 @@ namespace GpsTrackFinder
 			get { return _points; }
 			set { _points = value; }
 		}
+
 	}
 
 	/// <summary>
@@ -169,6 +177,7 @@ namespace GpsTrackFinder
 						if (stat.MinDist > dist)
 							stat.MinDist = dist;
 					}
+					stat.FileName = fileName;
 				}
 			}
 			catch (Exception ex)

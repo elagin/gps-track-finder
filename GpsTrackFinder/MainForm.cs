@@ -39,17 +39,30 @@ namespace GpsTrackFinder
 		/// Хранит настройки.</summary>
 		private Settings settings = new Settings("config");	// Настройки
 		private int divider = 1000;
+		private DataTable dt = new DataTable();
 
 		public MainForm()
 		{
 			InitializeComponent();
 			fillCtrls();
-			listView1.View = View.Details;
-			listView1.Columns.Add(new ColHeader("Имя файла", 500, HorizontalAlignment.Left, true));
-			listView1.Columns.Add(new ColHeader("Минимальное расстояние (км.)", 160, HorizontalAlignment.Left, true));
-			listView1.Columns.Add(new ColHeader("Длинна трека (км.)", 100, HorizontalAlignment.Left, true));
-			listView1.Columns.Add(new ColHeader("Количество точек", 100, HorizontalAlignment.Left, true));
-			listView1.Columns.Add(new ColHeader("Точек на метр", 100, HorizontalAlignment.Left, true));
+			enableCtrls();
+		}
+
+		/// <summary>
+		/// Инициализирует dataGridView.</summary>
+		private void initDataGridView()
+		{
+			dt.Columns.Add("filename", typeof(string));
+			dt.Columns.Add("distance", typeof(double));
+			dt.Columns.Add("length", typeof(double));
+			dt.Columns.Add("points", typeof(double));
+			dt.Columns.Add("points_p_m", typeof(double));
+
+			foreach (DataGridViewColumn column in dataGridView1.Columns)
+			{
+				dataGridView1.Columns[column.Name].SortMode = DataGridViewColumnSortMode.Automatic;
+				dataGridView1.Columns[column.Name].HeaderCell.SortGlyphDirection = SortOrder.None;
+			}
 		}
 
 		/// <summary>
@@ -93,6 +106,8 @@ namespace GpsTrackFinder
 			textBoxFindFolder.Text = settings.SearchFolder;
 
 			textBoxDistance.Text = settings.Distaice.ToString();
+
+			initDataGridView();
 		}
 
 		/// <summary>
@@ -124,14 +139,18 @@ namespace GpsTrackFinder
 				settings.Distaice =	Convert.ToInt32(textBoxDistance.Text, invC);
 		}
 
+		//struct 
+
 		/// <summary>
 		/// Обрабатываем данные.</summary>
 		private void buttonStart_Click(object sender, EventArgs e)
 		{
 			SaveCtrls();
+			dt.Clear();
 
 			string filepath = textBoxFindFolder.Text;
 			DirectoryInfo d = new DirectoryInfo(filepath);
+
 			foreach (var file in d.GetFiles("*.plt"))
 			{
 				ListViewItem row = new ListViewItem(file.FullName);
@@ -139,12 +158,16 @@ namespace GpsTrackFinder
 				GpsPoint searchPoint = new GpsPoint(settings.CentralPoint.Lat, settings.CentralPoint.Lon);
 				TrackStat stat = Drivers.ParsePlt("", searchPoint, settings.Distaice, file.FullName);
 
-				row.SubItems.Add(String.Format("{0:N0}", stat.MinDist));
-				row.SubItems.Add(String.Format("{0:N0}", stat.Length));
-				row.SubItems.Add(String.Format("{0:N0}", stat.Points));
-				row.SubItems.Add(String.Format("{0:N2}", stat.Points / (stat.Length / divider)));
-				listView1.Items.Add(row);
+				object[] arr = new object[5];
+				arr[0] = stat.FileName;
+				arr[1] = stat.MinDist;
+				arr[2] = stat.Length;
+				arr[3] = stat.Points;
+				arr[4] = stat.Points / (stat.Length / divider);
+				dt.Rows.Add(arr);
 			}
+			dataGridView1.DataSource = dt;
+			dataGridView1.Columns[0].CellTemplate.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
 		}
 
 		/// <summary>
@@ -181,30 +204,49 @@ namespace GpsTrackFinder
 			settings.save();
 		}
 
+		/// <summary>
+		/// Возвращает список имен выделеных файлов.</summary>
+		private List<string> getSelectedFilenames()
+		{
+			List<string> res = new List<string>();
+			foreach (DataGridViewRow item in dataGridView1.SelectedRows)
+				res.Add(item.Cells[0].FormattedValue.ToString());
+			return res;
+		}
+
+		/// <summary>
+		/// Копирует имена выделеных файлов в буфер обмена.</summary>
 		private void buttonCopyPath_Click(object sender, EventArgs e)
 		{
-			if (listView1.SelectedIndices.Count > 0)
+			try
 			{
-				try
+				StringBuilder buff = new StringBuilder();
+				List<string> fileNames = getSelectedFilenames();
+				foreach (string item in fileNames)
 				{
-					string fileName = listView1.Items[listView1.SelectedIndices[0]].Text;
-					Clipboard.SetData(DataFormats.Text, (Object)fileName);
+					string fileName = dataGridView1.CurrentCell.FormattedValue.ToString();
+					buff.Append(fileName + Environment.NewLine);
 				}
-				catch (Exception ex)
-				{
-					string caption = "Произошла ошибка при вставке в буфер обмена";
-					var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-				}
+				if(buff.Length > 0)
+					Clipboard.SetData(DataFormats.Text, (Object)buff.ToString());
+			}
+			catch (Exception ex)
+			{
+				string caption = "Произошла ошибка при вставке в буфер обмена";
+				var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
+		/// <summary>
+		/// Открывает выделеные файлы в редакторе по-умолчанию.</summary>
 		private void buttonOpenFolder_Click(object sender, EventArgs e)
 		{
-			foreach (ListViewItem item in listView1.SelectedItems)
+			List<string> fileNames = getSelectedFilenames();
+			foreach (string item in fileNames)
 			{
 				Process Proc = new Process();
 				Proc.StartInfo.FileName = "explorer";
-				Proc.StartInfo.Arguments = item.Text;
+				Proc.StartInfo.Arguments = item;
 				Proc.Start();
 				Proc.Close();
 			}
@@ -218,23 +260,26 @@ namespace GpsTrackFinder
 			}
 		}
 
-		private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
+		/// <summary>
+		/// Переключаем вкл/откл кнопки "Старт" в зависимости от наличия необходимых данных.</summary>
+		private void enableCtrls()
 		{
-			ColHeader clickedCol = (ColHeader)this.listView1.Columns[e.Column];
-			clickedCol.ascending = !clickedCol.ascending;
-			int numItems = this.listView1.Items.Count;
-			this.listView1.BeginUpdate();
-			ArrayList SortArray = new ArrayList();
-			for (int i = 0; i < numItems; i++)
-				SortArray.Add(new SortWrapper(this.listView1.Items[i], e.Column));
+			buttonStart.Enabled = (textBoxFindFolder.Text.Length > 0 && textBoxLat.Text.Length > 0 && textBoxLon.Text.Length > 0);
+		}
 
-			SortArray.Sort(0, SortArray.Count, new SortWrapper.SortComparer(clickedCol.ascending));
+		private void textBoxFindFolder_TextChanged(object sender, EventArgs e)
+		{
+			enableCtrls();
+		}
 
-			this.listView1.Items.Clear();
-			for (int i = 0; i < numItems; i++)
-				this.listView1.Items.Add(((SortWrapper)SortArray[i]).sortItem);
+		private void textBoxLat_TextChanged(object sender, EventArgs e)
+		{
+			enableCtrls();
+		}
 
-			this.listView1.EndUpdate();
+		private void textBoxLon_TextChanged(object sender, EventArgs e)
+		{
+			enableCtrls();
 		}
 	}
 
@@ -255,88 +300,6 @@ namespace GpsTrackFinder
 			/// <summary>
 			///  Generates the text shown in the combo box.</summary>
 			return Name;
-		}
-	}
-
-	// An instance of the SortWrapper class is created for
-	// each item and added to the ArrayList for sorting.
-	public class SortWrapper
-	{
-		internal ListViewItem sortItem;
-		internal int sortColumn;
-
-		// A SortWrapper requires the item and the index of the clicked column.
-		public SortWrapper(ListViewItem Item, int iColumn)
-		{
-			sortItem = Item;
-			sortColumn = iColumn;
-		}
-
-		// Text property for getting the text of an item.
-		public string Text
-		{
-			get
-			{
-				return sortItem.SubItems[sortColumn].Text;
-			}
-		}
-
-		// Implementation of the IComparer
-		// interface for sorting ArrayList items.
-		public class SortComparer : IComparer
-		{
-			bool ascending;
-
-			// Constructor requires the sort order;
-			// true if ascending, otherwise descending.
-			public SortComparer(bool asc)
-			{
-				this.ascending = asc;
-			}
-
-			// Implemnentation of the IComparer:Compare method for comparing two objects.
-			public int Compare(object x, object y)
-			{
-				SortWrapper xItem = (SortWrapper)x;
-				SortWrapper yItem = (SortWrapper)y;
-
-				CultureInfo invC = CultureInfo.InvariantCulture;
-
-				string xText = xItem.sortItem.SubItems[xItem.sortColumn].Text;
-				string yText = yItem.sortItem.SubItems[yItem.sortColumn].Text;
-
-				//Пока самый быстрый вариант
-				if(Microsoft.VisualBasic.Information.IsNumeric(xText[0]))
-				{
-					double xD = Convert.ToDouble(myTrim(xText), invC);
-					double yD = Convert.ToDouble(myTrim(yText), invC);
-					int newRes = (xD > yD) ? 1 : -1;
-					return newRes * (this.ascending ? 1 : -1);
-				}
-				else
-					return xText.CompareTo(yText) * (this.ascending ? 1 : -1);
-			}
-
-			private string myTrim(string val)
-			{
-				val = val.Replace(" ", string.Empty);
-				return val;
-			}
-		}
-	}
-
-	// The ColHeader class is a ColumnHeader object with an
-	// added property for determining an ascending or descending sort.
-	// True specifies an ascending order, false specifies a descending order.
-	public class ColHeader : ColumnHeader
-	{
-		public bool ascending;
-		public ColHeader(string text, int width, HorizontalAlignment align, bool asc)
-		{
-			this.Text = text;
-			this.Width = width;
-			this.TextAlign = align;
-			this.ascending = asc;
 		}
 	}
 }
