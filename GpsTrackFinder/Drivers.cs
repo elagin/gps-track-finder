@@ -205,6 +205,7 @@ namespace GpsTrackFinder
 				string tmp = "";
 				int tmpSize = 0;
 				int mul = 1;
+				Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator[0];
 
 				if (value[0] == '-')
 				{
@@ -224,9 +225,18 @@ namespace GpsTrackFinder
 						switch (state)
 						{
 							case State.grad:
-								tmp = value.Substring(start, tmpSize);
-								res_grad = Convert.ToInt32(tmp);
-								state = State.min;
+								if (value[i].CompareTo('.') == 0 || value[i].CompareTo(',') == 0)
+								{
+									tmp = value.Substring(start, value.Length - start);
+									res = Convert.ToDouble(tmp.Replace('.', separator));
+									return res;
+								}
+								else
+								{
+									tmp = value.Substring(start, tmpSize);
+									res_grad = Convert.ToInt32(tmp);
+									state = State.min;
+								}
 								break;
 							case State.min:
 								if (value[i].CompareTo('.') == 0 || value[i].CompareTo(',') == 0)
@@ -239,10 +249,6 @@ namespace GpsTrackFinder
 									tmp = value.Substring(start, tmpSize);
 									state = State.sec;
 								}
-
-								Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator[0];
-
-								tmp = tmp.Replace('.', separator);
 								res_min = Convert.ToDouble(tmp.Replace('.', separator));
 								break;
 							case State.sec:
