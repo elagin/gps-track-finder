@@ -40,6 +40,9 @@ namespace GpsTrackFinder
 		private Settings settings = new Settings("config");	// Настройки
 		private int divider = 1000;
 		private DataTable dt = new DataTable();
+		private double _degLat = 0;
+		private double _degLon = 0;
+
 
 		public MainForm()
 		{
@@ -79,6 +82,9 @@ namespace GpsTrackFinder
 
 			comboBoxLon.Items.Add(new ComboItem("E",+ 0));
 			comboBoxLon.Items.Add(new ComboItem("W", 1));
+
+			_degLat = Drivers.getDeg(settings.CentralPoint.Lat);
+			_degLon = Drivers.getDeg(settings.CentralPoint.Lon);
 
 			// Есть минус, ставим букву и минус выкидываем
 			if (settings.CentralPoint.Lat[0] == '-')
@@ -132,6 +138,10 @@ namespace GpsTrackFinder
 					settings.CentralPoint.Lon = textBoxLon.Text;
 				else
 					settings.CentralPoint.Lon = "-" + textBoxLon.Text;
+
+				_degLat = Drivers.getDeg(settings.CentralPoint.Lat);
+				_degLon = Drivers.getDeg(settings.CentralPoint.Lon);
+
 			}
 			settings.SearchFolder = textBoxFindFolder.Text;
 
@@ -155,7 +165,8 @@ namespace GpsTrackFinder
 			{
 				ListViewItem row = new ListViewItem(file.FullName);
 
-				GpsPoint searchPoint = new GpsPoint(settings.CentralPoint.Lat, settings.CentralPoint.Lon);
+				//GpsPoint searchPoint = new GpsPoint(settings.CentralPoint.Lat, settings.CentralPoint.Lon);
+				GpsPoint searchPoint = new GpsPoint(_degLat, _degLon);
 				TrackStat stat = Drivers.ParsePlt("", searchPoint, settings.Distaice, file.FullName);
 
 				object[] arr = new object[5];

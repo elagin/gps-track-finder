@@ -28,6 +28,8 @@ using System.Globalization;
 
 namespace GpsTrackFinder
 {
+	enum State { grad, min, sec, end };
+
 	public class TrackStat
 	{
 		public TrackStat()
@@ -186,6 +188,83 @@ namespace GpsTrackFinder
 				var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 			return stat;
+		}
+
+		/// <summary>
+		/// Приводит координату любого формата к градусам.<summary>
+		public static double getDeg(string value)
+		{
+			double res = 0;
+			try
+			{
+				State state = State.grad;
+				int res_grad = 0;
+				double res_min = 0;
+				double res_sec = 0;
+				int start = 0;
+				string tmp = "";
+				int tmpSize = 0;
+				int mul = 1;
+
+				if (value[0] == '-')
+				{
+					value = value.Remove(0, 1);
+					mul = -1;
+				}
+
+				for (int i = 0; i < value.Length; i++)
+				{
+					if (!Char.IsDigit(value[i]) || i == value.Length - 1)
+					{
+						if (i != value.Length - 1)
+							tmpSize = i - start;
+						else
+							tmpSize = i - start + 1;
+
+						switch (state)
+						{
+							case State.grad:
+								tmp = value.Substring(start, tmpSize);
+								res_grad = Convert.ToInt32(tmp);
+								state = State.min;
+								break;
+							case State.min:
+								if (value[i].CompareTo('.') == 0 || value[i].CompareTo(',') == 0)
+								{
+									tmp = value.Substring(start, value.Length - start);
+									state = State.end;
+								}
+								else
+								{
+									tmp = value.Substring(start, tmpSize);
+									state = State.sec;
+								}
+
+								Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator[0];
+
+								tmp = tmp.Replace('.', separator);
+								res_min = Convert.ToDouble(tmp.Replace('.', separator));
+								break;
+							case State.sec:
+								tmp = value.Substring(start, value.Length - start);
+								res_sec = Convert.ToDouble(tmp);
+								state = State.end;
+								break;
+						}
+						start = i + 1;
+					}
+				}
+				double sec = res_sec / 60;
+				double min = (res_min + sec) / 60;
+				res = (res_grad + min) * mul;
+				return res;
+			}
+			catch (Exception ex)
+			{
+				string caption = "Произошла ошибка при преобразовании координаты: " + value + ". Пожалуйста, проверьте формат.";
+				var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return 0;
+			}
 		}
 	}
 }
