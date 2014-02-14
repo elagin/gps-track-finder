@@ -48,8 +48,8 @@ namespace GpsTrackFinder
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
 			this.textBoxLat = new System.Windows.Forms.TextBox();
 			this.textBoxLon = new System.Windows.Forms.TextBox();
 			this.textBoxDistance = new System.Windows.Forms.TextBox();
@@ -70,12 +70,16 @@ namespace GpsTrackFinder
 			this.length = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.points = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.points_p_m = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.panel1 = new System.Windows.Forms.Panel();
+			this.panel2 = new System.Windows.Forms.Panel();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+			this.panel1.SuspendLayout();
+			this.panel2.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// textBoxLat
 			// 
-			this.textBoxLat.Location = new System.Drawing.Point(50, 26);
+			this.textBoxLat.Location = new System.Drawing.Point(50, 24);
 			this.textBoxLat.Name = "textBoxLat";
 			this.textBoxLat.Size = new System.Drawing.Size(100, 20);
 			this.textBoxLat.TabIndex = 0;
@@ -83,7 +87,7 @@ namespace GpsTrackFinder
 			// 
 			// textBoxLon
 			// 
-			this.textBoxLon.Location = new System.Drawing.Point(199, 27);
+			this.textBoxLon.Location = new System.Drawing.Point(199, 24);
 			this.textBoxLon.Name = "textBoxLon";
 			this.textBoxLon.Size = new System.Drawing.Size(100, 20);
 			this.textBoxLon.TabIndex = 1;
@@ -91,7 +95,7 @@ namespace GpsTrackFinder
 			// 
 			// textBoxDistance
 			// 
-			this.textBoxDistance.Location = new System.Drawing.Point(313, 27);
+			this.textBoxDistance.Location = new System.Drawing.Point(313, 24);
 			this.textBoxDistance.Name = "textBoxDistance";
 			this.textBoxDistance.Size = new System.Drawing.Size(100, 20);
 			this.textBoxDistance.TabIndex = 2;
@@ -99,7 +103,7 @@ namespace GpsTrackFinder
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(310, 11);
+			this.label1.Location = new System.Drawing.Point(310, 0);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(83, 13);
 			this.label1.TabIndex = 3;
@@ -107,18 +111,18 @@ namespace GpsTrackFinder
 			// 
 			// textBoxFindFolder
 			// 
-			this.textBoxFindFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
-			this.textBoxFindFolder.Location = new System.Drawing.Point(12, 82);
+			this.textBoxFindFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.textBoxFindFolder.Location = new System.Drawing.Point(12, 60);
 			this.textBoxFindFolder.Name = "textBoxFindFolder";
-			this.textBoxFindFolder.Size = new System.Drawing.Size(896, 20);
+			this.textBoxFindFolder.Size = new System.Drawing.Size(881, 20);
 			this.textBoxFindFolder.TabIndex = 4;
 			this.textBoxFindFolder.TextChanged += new System.EventHandler(this.textBoxFindFolder_TextChanged);
 			// 
 			// buttonBrowse
 			// 
 			this.buttonBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.buttonBrowse.Location = new System.Drawing.Point(914, 79);
+			this.buttonBrowse.Location = new System.Drawing.Point(899, 57);
 			this.buttonBrowse.Name = "buttonBrowse";
 			this.buttonBrowse.Size = new System.Drawing.Size(75, 23);
 			this.buttonBrowse.TabIndex = 5;
@@ -128,12 +132,11 @@ namespace GpsTrackFinder
 			// 
 			// buttonStart
 			// 
-			this.buttonStart.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
-			this.buttonStart.Location = new System.Drawing.Point(444, 113);
+			this.buttonStart.Anchor = System.Windows.Forms.AnchorStyles.Top;
+			this.buttonStart.Location = new System.Drawing.Point(442, 23);
 			this.buttonStart.Name = "buttonStart";
 			this.buttonStart.Size = new System.Drawing.Size(142, 23);
-			this.buttonStart.TabIndex = 6;
+			this.buttonStart.TabIndex = 3;
 			this.buttonStart.Text = "Старт";
 			this.buttonStart.UseVisualStyleBackColor = true;
 			this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
@@ -141,7 +144,7 @@ namespace GpsTrackFinder
 			// comboBoxLat
 			// 
 			this.comboBoxLat.FormattingEnabled = true;
-			this.comboBoxLat.Location = new System.Drawing.Point(12, 25);
+			this.comboBoxLat.Location = new System.Drawing.Point(12, 24);
 			this.comboBoxLat.Name = "comboBoxLat";
 			this.comboBoxLat.Size = new System.Drawing.Size(35, 21);
 			this.comboBoxLat.TabIndex = 8;
@@ -149,15 +152,15 @@ namespace GpsTrackFinder
 			// comboBoxLon
 			// 
 			this.comboBoxLon.FormattingEnabled = true;
-			this.comboBoxLon.Location = new System.Drawing.Point(161, 26);
+			this.comboBoxLon.Location = new System.Drawing.Point(161, 24);
 			this.comboBoxLon.Name = "comboBoxLon";
 			this.comboBoxLon.Size = new System.Drawing.Size(35, 21);
 			this.comboBoxLon.TabIndex = 9;
 			// 
 			// buttonCopyPath
 			// 
-			this.buttonCopyPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.buttonCopyPath.Location = new System.Drawing.Point(53, 717);
+			this.buttonCopyPath.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+			this.buttonCopyPath.Location = new System.Drawing.Point(301, 435);
 			this.buttonCopyPath.Name = "buttonCopyPath";
 			this.buttonCopyPath.Size = new System.Drawing.Size(133, 23);
 			this.buttonCopyPath.TabIndex = 10;
@@ -167,8 +170,8 @@ namespace GpsTrackFinder
 			// 
 			// buttonOpenFolder
 			// 
-			this.buttonOpenFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.buttonOpenFolder.Location = new System.Drawing.Point(228, 717);
+			this.buttonOpenFolder.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+			this.buttonOpenFolder.Location = new System.Drawing.Point(542, 435);
 			this.buttonOpenFolder.Name = "buttonOpenFolder";
 			this.buttonOpenFolder.Size = new System.Drawing.Size(133, 23);
 			this.buttonOpenFolder.TabIndex = 11;
@@ -179,7 +182,7 @@ namespace GpsTrackFinder
 			// buttonAbout
 			// 
 			this.buttonAbout.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.buttonAbout.Location = new System.Drawing.Point(914, 27);
+			this.buttonAbout.Location = new System.Drawing.Point(899, 21);
 			this.buttonAbout.Name = "buttonAbout";
 			this.buttonAbout.Size = new System.Drawing.Size(75, 23);
 			this.buttonAbout.TabIndex = 12;
@@ -190,7 +193,7 @@ namespace GpsTrackFinder
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(12, 11);
+			this.label2.Location = new System.Drawing.Point(9, 0);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(48, 13);
 			this.label2.TabIndex = 13;
@@ -199,7 +202,7 @@ namespace GpsTrackFinder
 			// label3
 			// 
 			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(158, 11);
+			this.label3.Location = new System.Drawing.Point(158, 0);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(53, 13);
 			this.label3.TabIndex = 14;
@@ -210,8 +213,9 @@ namespace GpsTrackFinder
 			this.dataGridView1.AllowUserToAddRows = false;
 			this.dataGridView1.AllowUserToDeleteRows = false;
 			this.dataGridView1.AllowUserToOrderColumns = true;
-			this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.dataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
 			this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 			this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
@@ -220,32 +224,32 @@ namespace GpsTrackFinder
             this.length,
             this.points,
             this.points_p_m});
-			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-			dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-			dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-			dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-			dataGridViewCellStyle2.Format = "N4";
-			dataGridViewCellStyle2.NullValue = null;
-			dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-			dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-			dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-			this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle2;
+			dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+			dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
+			dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+			dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
+			dataGridViewCellStyle6.Format = "N4";
+			dataGridViewCellStyle6.NullValue = null;
+			dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+			dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+			dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+			this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle6;
 			this.dataGridView1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-			this.dataGridView1.Location = new System.Drawing.Point(15, 142);
+			this.dataGridView1.Location = new System.Drawing.Point(3, 3);
 			this.dataGridView1.Name = "dataGridView1";
 			this.dataGridView1.RowHeadersVisible = false;
 			this.dataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-			this.dataGridView1.Size = new System.Drawing.Size(974, 544);
+			this.dataGridView1.Size = new System.Drawing.Size(971, 426);
 			this.dataGridView1.TabIndex = 15;
 			// 
 			// filename
 			// 
 			this.filename.DataPropertyName = "filename";
-			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-			dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Black;
-			dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-			this.filename.DefaultCellStyle = dataGridViewCellStyle1;
+			dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+			dataGridViewCellStyle5.ForeColor = System.Drawing.Color.Black;
+			dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+			this.filename.DefaultCellStyle = dataGridViewCellStyle5;
 			this.filename.HeaderText = "Имя файла";
 			this.filename.Name = "filename";
 			// 
@@ -273,32 +277,55 @@ namespace GpsTrackFinder
 			this.points_p_m.HeaderText = "Точек на метр";
 			this.points_p_m.Name = "points_p_m";
 			// 
+			// panel1
+			// 
+			this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.panel1.Controls.Add(this.dataGridView1);
+			this.panel1.Controls.Add(this.buttonCopyPath);
+			this.panel1.Controls.Add(this.buttonOpenFolder);
+			this.panel1.Location = new System.Drawing.Point(12, 115);
+			this.panel1.Name = "panel1";
+			this.panel1.Size = new System.Drawing.Size(977, 461);
+			this.panel1.TabIndex = 16;
+			// 
+			// panel2
+			// 
+			this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.panel2.Controls.Add(this.textBoxLat);
+			this.panel2.Controls.Add(this.textBoxFindFolder);
+			this.panel2.Controls.Add(this.buttonAbout);
+			this.panel2.Controls.Add(this.textBoxLon);
+			this.panel2.Controls.Add(this.buttonBrowse);
+			this.panel2.Controls.Add(this.label3);
+			this.panel2.Controls.Add(this.textBoxDistance);
+			this.panel2.Controls.Add(this.label2);
+			this.panel2.Controls.Add(this.label1);
+			this.panel2.Controls.Add(this.buttonStart);
+			this.panel2.Controls.Add(this.comboBoxLon);
+			this.panel2.Controls.Add(this.comboBoxLat);
+			this.panel2.Location = new System.Drawing.Point(12, 12);
+			this.panel2.Name = "panel2";
+			this.panel2.Size = new System.Drawing.Size(977, 97);
+			this.panel2.TabIndex = 17;
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(1001, 752);
-			this.Controls.Add(this.dataGridView1);
-			this.Controls.Add(this.label3);
-			this.Controls.Add(this.label2);
-			this.Controls.Add(this.buttonAbout);
-			this.Controls.Add(this.buttonOpenFolder);
-			this.Controls.Add(this.buttonCopyPath);
-			this.Controls.Add(this.comboBoxLon);
-			this.Controls.Add(this.comboBoxLat);
-			this.Controls.Add(this.buttonStart);
-			this.Controls.Add(this.buttonBrowse);
-			this.Controls.Add(this.textBoxFindFolder);
-			this.Controls.Add(this.label1);
-			this.Controls.Add(this.textBoxDistance);
-			this.Controls.Add(this.textBoxLon);
-			this.Controls.Add(this.textBoxLat);
+			this.ClientSize = new System.Drawing.Size(1001, 588);
+			this.Controls.Add(this.panel2);
+			this.Controls.Add(this.panel1);
 			this.Name = "MainForm";
 			this.Text = "GpsTrackFinder";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+			this.panel1.ResumeLayout(false);
+			this.panel2.ResumeLayout(false);
+			this.panel2.PerformLayout();
 			this.ResumeLayout(false);
-			this.PerformLayout();
 
 		}
 
@@ -324,6 +351,8 @@ namespace GpsTrackFinder
 		private System.Windows.Forms.DataGridViewTextBoxColumn length;
 		private System.Windows.Forms.DataGridViewTextBoxColumn points;
 		private System.Windows.Forms.DataGridViewTextBoxColumn points_p_m;
+		private System.Windows.Forms.Panel panel1;
+		private System.Windows.Forms.Panel panel2;
 	}
 }
 
