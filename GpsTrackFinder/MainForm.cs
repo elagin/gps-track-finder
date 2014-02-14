@@ -39,8 +39,12 @@ namespace GpsTrackFinder
 		/// Хранит настройки.</summary>
 		private Settings settings = new Settings("config");	// Настройки
 		private DataTable dt = new DataTable();
-		private double _degLat = 0;
-		private double _degLon = 0;
+
+		private GpsPoint _internalDegres = new GpsPoint();
+
+		private System.ComponentModel.BackgroundWorker bgw = new BackgroundWorker();
+		private Stopwatch sWatch = new Stopwatch();
+		private string _path = "";
 
 		/// <summary>
 		/// Индекс столбца для сортировки.</summary>
@@ -51,6 +55,12 @@ namespace GpsTrackFinder
 			InitializeComponent();
 			fillCtrls();
 			enableCtrls();
+
+			bgw.DoWork += new DoWorkEventHandler(bgw_DoWork);
+			bgw.ProgressChanged += new ProgressChangedEventHandler(bgw_ProgressChanged);
+			bgw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgw_RunWorkerCompleted);
+			bgw.WorkerReportsProgress = true;
+			bgw.WorkerSupportsCancellation = true;
 		}
 
 		/// <summary>
@@ -79,8 +89,9 @@ namespace GpsTrackFinder
 			comboBoxLon.Items.Add(new ComboItem("E",+ 0));
 			comboBoxLon.Items.Add(new ComboItem("W", 1));
 
-			_degLat = Drivers.getDeg(settings.CentralPoint.Lat);
-			_degLon = Drivers.getDeg(settings.CentralPoint.Lon);
+
+			_internalDegres.Lat = Drivers.getDeg(settings.CentralPoint.Lat);
+			_internalDegres.Lon = Drivers.getDeg(settings.CentralPoint.Lon);
 
 			// Есть минус, ставим букву и минус выкидываем
 			if (settings.CentralPoint.Lat[0] == '-')
@@ -135,8 +146,8 @@ namespace GpsTrackFinder
 				else
 					settings.CentralPoint.Lon = "-" + textBoxLon.Text;
 
-				_degLat = Drivers.getDeg(settings.CentralPoint.Lat);
-				_degLon = Drivers.getDeg(settings.CentralPoint.Lon);
+				_internalDegres.Lat = Drivers.getDeg(settings.CentralPoint.Lat);
+				_internalDegres.Lon = Drivers.getDeg(settings.CentralPoint.Lon);
 
 			}
 			settings.SearchFolder = textBoxFindFolder.Text;
@@ -149,30 +160,21 @@ namespace GpsTrackFinder
 		/// Обрабатываем данные.</summary>
 		private void buttonStart_Click(object sender, EventArgs e)
 		{
-			SaveCtrls();
-			dt.Clear();
-
-			string filepath = textBoxFindFolder.Text;
-			DirectoryInfo d = new DirectoryInfo(filepath);
-
-			foreach (var file in d.GetFiles("*.plt"))
+			if (!bgw.IsBusy)
 			{
-				ListViewItem row = new ListViewItem(file.FullName);
+				SaveCtrls();
+				dt.Clear();
 
-				//GpsPoint searchPoint = new GpsPoint(settings.CentralPoint.Lat, settings.CentralPoint.Lon);
-				GpsPoint searchPoint = new GpsPoint(_degLat, _degLon);
-				TrackStat stat = Drivers.ParsePlt("", searchPoint, settings.Distaice, file.FullName);
-
-				object[] arr = new object[5];
-				arr[0] = stat.FileName;
-				arr[1] = (int)stat.MinDist;
-				arr[2] = (int)stat.Length;
-				arr[3] = stat.Points;
-				arr[4] = stat.Points / (stat.Length / 1000);
-				dt.Rows.Add(arr);
+				string filepath = textBoxFindFolder.Text;
+				bgw.RunWorkerAsync();
+				buttonStart.Text = "Стоп";
+				dataGridView1.DataSource = dt;
+				dataGridView1.Sort(dataGridView1.Columns[_sortColunm], ListSortDirection.Ascending);
 			}
-			dataGridView1.DataSource = dt;
-			dataGridView1.Sort(dataGridView1.Columns[_sortColunm], ListSortDirection.Ascending);
+			else
+			{
+				bgw.CancelAsync();
+			}
 		}
 
 		/// <summary>
@@ -293,6 +295,75 @@ namespace GpsTrackFinder
 		{
 			_sortColunm = e.ColumnIndex;
 		}
+
+		/// <summary>
+		/// Задача вторичного потока.</summary>
+		void bgw_DoWork(object sender, DoWorkEventArgs e)
+		{
+			try
+			{
+				folderWalker(ref bgw, settings.SearchFolder);
+			}
+			catch (Exception ex)
+			{
+				const string caption = "Ошибка";
+				var result = MessageBox.Show(ex.Message, caption,
+											 MessageBoxButtons.OK,
+											 MessageBoxIcon.Error);
+			}
+		}
+
+		/// <summary>
+		/// Событие изменения прогресс-бара.</summary>
+		void bgw_ProgressChanged(object sender, ProgressChangedEventArgs e)
+		{
+			WorkState state = (WorkState)e.UserState;
+			dt.Rows.Add(state.arr);
+			labelCurrentFolder.Text = state.path;
+		}
+
+		/// <summary>
+		/// Вторичный поток работу закончил.</summary>
+		void bgw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+		{
+			sWatch.Stop();						// Останавливаем таймер
+			buttonStart.Text = "Старт";
+			TimeSpan tSpan = sWatch.Elapsed;
+		}
+
+		private void folderWalker(ref BackgroundWorker bgw, string path)
+		{
+			if (!bgw.CancellationPending)
+			{
+				DirectoryInfo d = new DirectoryInfo(path);
+				foreach (var file in d.GetFiles("*.plt"))
+				{
+					TrackStat stat = Drivers.ParsePlt(_internalDegres, settings.Distaice, file.FullName);
+					WorkState state = new WorkState();
+
+					object[] arr = new object[5];
+					arr[0] = stat.FileName;
+					arr[1] = (int)stat.MinDist;
+					arr[2] = (int)stat.Length;
+					arr[3] = stat.Points;
+					arr[4] = stat.Points / (stat.Length / 1000);
+
+					state.arr = arr;
+					state.path = path;
+					bgw.ReportProgress(0, state);  // Обновляем информацию о результатах работы.
+				}
+				foreach (var folder in d.GetDirectories())
+					folderWalker(ref bgw, path + "\\" + folder.Name);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Класс для хранения статистики по работе второго потока.</summary>
+	public class WorkState
+	{
+		public object[] arr { get; set; }
+		public string path { get; set; }
 	}
 
 	/// <summary>

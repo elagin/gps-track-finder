@@ -25,6 +25,9 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 using System.Globalization;
+using System.Diagnostics;
+using System.ComponentModel;
+using System.Data;
 
 namespace GpsTrackFinder
 {
@@ -148,7 +151,7 @@ namespace GpsTrackFinder
 
 		/// <summary>
 		/// Парсинг PLT-файла.</summary>
-		public static TrackStat ParsePlt(string aData, GpsPoint searchPoint, int aDist, string fileName)
+		public static TrackStat ParsePlt(GpsPoint searchPoint, int aDist, string fileName)
 		{
 			GpsPoint prevPoint = null;
 			TrackStat stat = new TrackStat();
@@ -184,8 +187,8 @@ namespace GpsTrackFinder
 			}
 			catch (Exception ex)
 			{
-				string caption = "Произошла ошибка при работе с файлом: " + fileName;
-				var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+				string caption = "Произошла ошибка при работе с файлом.";
+				var result = MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 			return stat;
 		}

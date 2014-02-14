@@ -35,7 +35,15 @@ namespace GpsTrackFinder
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			Application.Run(new MainForm());
+			try
+			{
+				Application.Run(new MainForm());
+			}
+			catch (Exception ex)
+			{
+				string caption = "Произошла ошибка при работе приложения.";
+				var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 	}
 }
