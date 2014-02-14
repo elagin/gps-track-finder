@@ -49,6 +49,10 @@ namespace GpsTrackFinder
 		private void InitializeComponent()
 		{
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
 			this.textBoxLat = new System.Windows.Forms.TextBox();
 			this.textBoxLon = new System.Windows.Forms.TextBox();
@@ -235,46 +239,59 @@ namespace GpsTrackFinder
 			dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
 			this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle6;
 			this.dataGridView1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-			this.dataGridView1.Location = new System.Drawing.Point(3, 3);
+			this.dataGridView1.Location = new System.Drawing.Point(3, 0);
 			this.dataGridView1.Name = "dataGridView1";
 			this.dataGridView1.RowHeadersVisible = false;
 			this.dataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
 			this.dataGridView1.Size = new System.Drawing.Size(971, 426);
 			this.dataGridView1.TabIndex = 15;
+			this.dataGridView1.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView1_ColumnHeaderMouseClick);
 			// 
 			// filename
 			// 
 			this.filename.DataPropertyName = "filename";
-			dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-			dataGridViewCellStyle5.ForeColor = System.Drawing.Color.Black;
-			dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-			this.filename.DefaultCellStyle = dataGridViewCellStyle5;
+			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+			dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Black;
+			dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+			this.filename.DefaultCellStyle = dataGridViewCellStyle1;
 			this.filename.HeaderText = "Имя файла";
 			this.filename.Name = "filename";
 			// 
 			// distance
 			// 
 			this.distance.DataPropertyName = "distance";
+			dataGridViewCellStyle2.Format = "N0";
+			dataGridViewCellStyle2.NullValue = null;
+			this.distance.DefaultCellStyle = dataGridViewCellStyle2;
 			this.distance.HeaderText = "Мин. расстояние";
 			this.distance.Name = "distance";
 			// 
 			// length
 			// 
 			this.length.DataPropertyName = "length";
+			dataGridViewCellStyle3.Format = "N0";
+			dataGridViewCellStyle3.NullValue = null;
+			this.length.DefaultCellStyle = dataGridViewCellStyle3;
 			this.length.HeaderText = "Длинна трека";
 			this.length.Name = "length";
 			// 
 			// points
 			// 
 			this.points.DataPropertyName = "points";
+			dataGridViewCellStyle4.Format = "N0";
+			dataGridViewCellStyle4.NullValue = null;
+			this.points.DefaultCellStyle = dataGridViewCellStyle4;
 			this.points.HeaderText = "Количество точек";
 			this.points.Name = "points";
 			// 
 			// points_p_m
 			// 
 			this.points_p_m.DataPropertyName = "points_p_m";
-			this.points_p_m.HeaderText = "Точек на метр";
+			dataGridViewCellStyle5.Format = "N0";
+			dataGridViewCellStyle5.NullValue = null;
+			this.points_p_m.DefaultCellStyle = dataGridViewCellStyle5;
+			this.points_p_m.HeaderText = "Точек на км.";
 			this.points_p_m.Name = "points_p_m";
 			// 
 			// panel1
@@ -346,13 +363,13 @@ namespace GpsTrackFinder
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.DataGridView dataGridView1;
+		private System.Windows.Forms.Panel panel1;
+		private System.Windows.Forms.Panel panel2;
 		private System.Windows.Forms.DataGridViewTextBoxColumn filename;
 		private System.Windows.Forms.DataGridViewTextBoxColumn distance;
 		private System.Windows.Forms.DataGridViewTextBoxColumn length;
 		private System.Windows.Forms.DataGridViewTextBoxColumn points;
 		private System.Windows.Forms.DataGridViewTextBoxColumn points_p_m;
-		private System.Windows.Forms.Panel panel1;
-		private System.Windows.Forms.Panel panel2;
 	}
 }
 

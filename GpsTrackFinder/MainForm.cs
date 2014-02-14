@@ -38,11 +38,13 @@ namespace GpsTrackFinder
 		/// <summary>
 		/// Хранит настройки.</summary>
 		private Settings settings = new Settings("config");	// Настройки
-		private int divider = 1000;
 		private DataTable dt = new DataTable();
 		private double _degLat = 0;
 		private double _degLon = 0;
 
+		/// <summary>
+		/// Индекс столбца для сортировки.</summary>
+		private int _sortColunm = 1;
 
 		public MainForm()
 		{
@@ -56,16 +58,10 @@ namespace GpsTrackFinder
 		private void initDataGridView()
 		{
 			dt.Columns.Add("filename", typeof(string));
-			dt.Columns.Add("distance", typeof(double));
-			dt.Columns.Add("length", typeof(double));
-			dt.Columns.Add("points", typeof(double));
+			dt.Columns.Add("distance", typeof(int));
+			dt.Columns.Add("length", typeof(int));
+			dt.Columns.Add("points", typeof(int));
 			dt.Columns.Add("points_p_m", typeof(double));
-
-			foreach (DataGridViewColumn column in dataGridView1.Columns)
-			{
-				dataGridView1.Columns[column.Name].SortMode = DataGridViewColumnSortMode.Automatic;
-				dataGridView1.Columns[column.Name].HeaderCell.SortGlyphDirection = SortOrder.None;
-			}
 		}
 
 		/// <summary>
@@ -149,8 +145,6 @@ namespace GpsTrackFinder
 				settings.Distaice =	Convert.ToInt32(textBoxDistance.Text, invC);
 		}
 
-		//struct 
-
 		/// <summary>
 		/// Обрабатываем данные.</summary>
 		private void buttonStart_Click(object sender, EventArgs e)
@@ -171,14 +165,14 @@ namespace GpsTrackFinder
 
 				object[] arr = new object[5];
 				arr[0] = stat.FileName;
-				arr[1] = stat.MinDist;
-				arr[2] = stat.Length;
+				arr[1] = (int)stat.MinDist;
+				arr[2] = (int)stat.Length;
 				arr[3] = stat.Points;
-				arr[4] = stat.Points / (stat.Length / divider);
+				arr[4] = stat.Points / (stat.Length / 1000);
 				dt.Rows.Add(arr);
 			}
 			dataGridView1.DataSource = dt;
-			dataGridView1.Columns[0].CellTemplate.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+			dataGridView1.Sort(dataGridView1.Columns[_sortColunm], ListSortDirection.Ascending);
 		}
 
 		/// <summary>
@@ -291,6 +285,13 @@ namespace GpsTrackFinder
 		private void textBoxLon_TextChanged(object sender, EventArgs e)
 		{
 			enableCtrls();
+		}
+
+		/// <summary>
+		/// Запоминает индекс столбца для сортировки.</summary>
+		private void dataGridView1_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+		{
+			_sortColunm = e.ColumnIndex;
 		}
 	}
 
