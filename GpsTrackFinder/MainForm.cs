@@ -89,7 +89,6 @@ namespace GpsTrackFinder
 			comboBoxLon.Items.Add(new ComboItem("E",+ 0));
 			comboBoxLon.Items.Add(new ComboItem("W", 1));
 
-
 			_internalDegres.Lat = Drivers.getDeg(settings.CentralPoint.Lat);
 			_internalDegres.Lon = Drivers.getDeg(settings.CentralPoint.Lon);
 
@@ -172,9 +171,7 @@ namespace GpsTrackFinder
 				dataGridView1.Sort(dataGridView1.Columns[_sortColunm], ListSortDirection.Ascending);
 			}
 			else
-			{
 				bgw.CancelAsync();
-			}
 		}
 
 		/// <summary>
@@ -339,18 +336,22 @@ namespace GpsTrackFinder
 				foreach (var file in d.GetFiles("*.plt"))
 				{
 					TrackStat stat = Drivers.ParsePlt(_internalDegres, settings.Distaice, file.FullName);
-					WorkState state = new WorkState();
 
-					object[] arr = new object[5];
-					arr[0] = stat.FileName;
-					arr[1] = (int)stat.MinDist;
-					arr[2] = (int)stat.Length;
-					arr[3] = stat.Points;
-					arr[4] = stat.Points / (stat.Length / 1000);
+					if (settings.Distaice * 1000 > (int)stat.MinDist)
+					{
+						WorkState state = new WorkState();
 
-					state.arr = arr;
-					state.path = path;
-					bgw.ReportProgress(0, state);  // Обновляем информацию о результатах работы.
+						object[] arr = new object[5];
+						arr[0] = stat.FileName;
+						arr[1] = (int)stat.MinDist;
+						arr[2] = (int)stat.Length;
+						arr[3] = stat.Points;
+						arr[4] = stat.Points / (stat.Length / 1000);
+
+						state.arr = arr;
+						state.path = path;
+						bgw.ReportProgress(0, state);  // Обновляем информацию о результатах работы.
+					}
 				}
 				foreach (var folder in d.GetDirectories())
 					folderWalker(ref bgw, path + "\\" + folder.Name);
