@@ -44,17 +44,20 @@ namespace GpsTrackFinder
 
 		private System.ComponentModel.BackgroundWorker bgw = new BackgroundWorker();
 		private Stopwatch sWatch = new Stopwatch();
-		private string _path = "";
 
 		/// <summary>
 		/// Индекс столбца для сортировки.</summary>
 		private int _sortColunm = 1;
 
+		/// <summary>
+		/// Количество найденных треков.</summary>
+		private int _tracksFound = 0;
+
 		public MainForm()
 		{
 			InitializeComponent();
 			fillCtrls();
-			enableCtrls();
+			checkAvaibleCtrls();
 
 			bgw.DoWork += new DoWorkEventHandler(bgw_DoWork);
 			bgw.ProgressChanged += new ProgressChangedEventHandler(bgw_ProgressChanged);
@@ -272,25 +275,42 @@ namespace GpsTrackFinder
 		}
 
 		/// <summary>
-		/// Переключаем вкл/откл кнопки "Старт" в зависимости от наличия необходимых данных.</summary>
-		private void enableCtrls()
+		/// Проверяет доступность элементов UI для пользователя.</summary>
+		private void checkAvaibleCtrls()
 		{
 			buttonStart.Enabled = (textBoxFindFolder.Text.Length > 0 && textBoxLat.Text.Length > 0 && textBoxLon.Text.Length > 0);
+			//buttonCopyPath.Enabled = false;
+			int count = 0;
+			foreach (DataGridViewRow item in dataGridView1.Rows)
+				if (item.Cells["id"].Value != null && (bool)item.Cells["id"].FormattedValue)
+					count++;
+			buttonCopyPath.Enabled = count > 0;
+			buttonOpenFolder.Enabled = count > 0;
+			buttonCopyToFilder.Enabled = (settings.CopyToFilder.Length > 0 && count > 0);
+			labelFoundInfo.Text = String.Format("Найдено/выбрано: {0}/{1}", _tracksFound, count);
 		}
 
 		private void textBoxFindFolder_TextChanged(object sender, EventArgs e)
 		{
-			enableCtrls();
+			checkAvaibleCtrls();
 		}
 
 		private void textBoxLat_TextChanged(object sender, EventArgs e)
 		{
-			enableCtrls();
+			checkAvaibleCtrls();
 		}
 
 		private void textBoxLon_TextChanged(object sender, EventArgs e)
 		{
-			enableCtrls();
+			checkAvaibleCtrls();
+		}
+
+		/// <summary>
+		/// Отслеживает смену текста в пути для копирования треков.</summary>
+		private void textBoxCopyToFilder_TextChanged(object sender, EventArgs e)
+		{
+			settings.CopyToFilder = textBoxCopyToFilder.Text;
+			checkAvaibleCtrls();
 		}
 
 		/// <summary>
@@ -323,7 +343,9 @@ namespace GpsTrackFinder
 		{
 			WorkState state = (WorkState)e.UserState;
 			dt.Rows.Add(state.arr);
-			labelCurrentFolder.Text = state.path;
+			labelCurrentFolder.Text = "Поиск: " + state.path;
+			_tracksFound++;
+			labelFoundInfo.Text = String.Format("Найдено/выбрано: {0}/0", _tracksFound);
 		}
 
 		/// <summary>
@@ -332,6 +354,7 @@ namespace GpsTrackFinder
 		{
 			sWatch.Stop();						// Останавливаем таймер
 			buttonStart.Text = "Старт";
+			labelCurrentFolder.Text = "Поиск: завершен";
 			TimeSpan tSpan = sWatch.Elapsed;
 		}
 
@@ -407,11 +430,11 @@ namespace GpsTrackFinder
 		}
 
 		/// <summary>
-		/// Отслеживает смену текста в пути для копирования треков.</summary>
-		private void textBoxCopyToFilder_TextChanged(object sender, EventArgs e)
+		/// Позволяет отследить какой checkBox будет изменен.</summary>
+		private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
 		{
-			settings.CopyToFilder = textBoxCopyToFilder.Text;
-			buttonCopyToFilder.Enabled = settings.CopyToFilder.Length > 0;
+			dataGridView1.CommitEdit(DataGridViewDataErrorContexts.Commit);
+			checkAvaibleCtrls();
 		}
 	}
 
