@@ -64,6 +64,7 @@ public class Settings
 {
 	private string _filename;
 	private string _searchFolder;
+	private string _сopyToFilder;
 	private SettingsGpsPoint _centralPoint;
 	private int _dist;
 
@@ -77,6 +78,12 @@ public class Settings
 	{
 		get { return _searchFolder; }
 		set { _searchFolder = value; }
+	}
+
+	public string CopyToFilder
+	{
+		get { return _сopyToFilder; }
+		set { _сopyToFilder = value; }
 	}
 
 	public int Distaice
@@ -170,6 +177,7 @@ public class Settings
 	private void SetDefault()
 	{
 		this._searchFolder = "";
+		this._сopyToFilder = "";
 		this._centralPoint = new SettingsGpsPoint("1", "1");
 		this._dist = 20;
 	}
@@ -177,6 +185,7 @@ public class Settings
 	private void CopyFrom(Settings Obj)
 	{
 		this.SearchFolder = Obj.SearchFolder;
+		this.CopyToFilder = Obj.CopyToFilder;
 		this.Distaice = Obj.Distaice;
 
 		// Нового объекта может не быть в старой версии настроек
