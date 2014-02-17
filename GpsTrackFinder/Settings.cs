@@ -185,12 +185,13 @@ public class Settings
 	private void CopyFrom(Settings Obj)
 	{
 		this.SearchFolder = Obj.SearchFolder;
-		this.CopyToFilder = Obj.CopyToFilder;
 		this.Distaice = Obj.Distaice;
 
 		// Нового объекта может не быть в старой версии настроек
 		if (Obj.CentralPoint != null)
 			this.CentralPoint = Obj.CentralPoint;
+		if (Obj.CopyToFilder != null)
+			this.CopyToFilder = Obj.CopyToFilder;
 	}
 }
 

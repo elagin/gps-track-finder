@@ -35,11 +35,6 @@ namespace GpsTrackFinder
 
 	public class TrackStat
 	{
-		public TrackStat()
-		{
-			_minDist = double.MaxValue;
-		}
-
 		private double _length;
 		private double _minDist;
 		private int _points;
@@ -160,28 +155,44 @@ namespace GpsTrackFinder
 			{
 				using (StreamReader file = new StreamReader(fileName))
 				{
+					double MinDist = double.MaxValue;
+					int lineNumber = 6;
+
 					for (int i = 0; i < 6; i++)		// Пропускаем заголовок
 						file.ReadLine();
 
 					while (!file.EndOfStream)
 					{
 						string line = file.ReadLine();
-						string[] split = line.Split(',');
-						GpsPoint tmp = new GpsPoint(split[0], split[1]);
-
-						if (prevPoint != null)
+						if (line.Length > 0)
 						{
-							stat.Length += calcDist(prevPoint, tmp);
-							prevPoint = tmp;
-						}
-						else
-							prevPoint = tmp;
+							try
+							{
+								string[] split = line.Split(',');
+								GpsPoint tmp = new GpsPoint(split[0], split[1]);
+								if (prevPoint != null)
+								{
+									stat.Length += calcDist(prevPoint, tmp);
+									prevPoint = tmp;
+								}
+								else
+									prevPoint = tmp;
 
-						stat.Points++;
-						double dist = calcDist(searchPoint, tmp);
-						if (stat.MinDist > dist)
-							stat.MinDist = dist;
+								stat.Points++;
+								double dist = calcDist(searchPoint, tmp);
+								if (MinDist > dist)
+									MinDist = dist;
+							}
+							catch (Exception ex)
+							{
+								string caption = "Произошла ошибка при работе с файлом.";
+								var result = MessageBox.Show(fileName + "\r\n" + "в строке: " + Convert.ToString(lineNumber) + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+							}
+						}
+						lineNumber++;
 					}
+					if (MinDist < double.MaxValue)
+						stat.MinDist = MinDist;
 					stat.FileName = fileName;
 				}
 			}
