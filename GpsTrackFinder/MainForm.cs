@@ -67,6 +67,7 @@ namespace GpsTrackFinder
 		/// Инициализирует dataGridView.</summary>
 		private void initDataGridView()
 		{
+			dt.Columns.Add("id", typeof(bool));
 			dt.Columns.Add("filename", typeof(string));
 			dt.Columns.Add("distance", typeof(int));
 			dt.Columns.Add("length", typeof(int));
@@ -218,8 +219,11 @@ namespace GpsTrackFinder
 		private List<string> getSelectedFilenames()
 		{
 			List<string> res = new List<string>();
-			foreach (DataGridViewRow item in dataGridView1.SelectedRows)
-				res.Add(item.Cells[0].FormattedValue.ToString());
+			foreach (DataGridViewRow item in dataGridView1.Rows)
+			{
+				if (item.Cells["id"].Value != null && (bool)item.Cells["id"].FormattedValue)
+					res.Add(item.Cells["filename"].FormattedValue.ToString());
+			}
 			return res;
 		}
 
@@ -232,10 +236,8 @@ namespace GpsTrackFinder
 				StringBuilder buff = new StringBuilder();
 				List<string> fileNames = getSelectedFilenames();
 				foreach (string item in fileNames)
-				{
-					string fileName = dataGridView1.CurrentCell.FormattedValue.ToString();
-					buff.Append(fileName + Environment.NewLine);
-				}
+					buff.Append(item + Environment.NewLine);
+
 				if(buff.Length > 0)
 					Clipboard.SetData(DataFormats.Text, (Object)buff.ToString());
 			}
@@ -348,12 +350,13 @@ namespace GpsTrackFinder
 					{
 						WorkState state = new WorkState();
 
-						object[] arr = new object[5];
-						arr[0] = stat.FileName;
-						arr[1] = (int)stat.MinDist;
-						arr[2] = (int)stat.Length;
-						arr[3] = stat.Points;
-						arr[4] = stat.Points / (stat.Length / 1000);
+						object[] arr = new object[6];
+						arr[0] = false;
+						arr[1] = stat.FileName;
+						arr[2] = (int)stat.MinDist;
+						arr[3] = (int)stat.Length;
+						arr[4] = stat.Points;
+						arr[5] = stat.Points / (stat.Length / 1000);
 
 						state.arr = arr;
 						state.path = path;
