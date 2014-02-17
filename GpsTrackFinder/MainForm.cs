@@ -119,6 +119,9 @@ namespace GpsTrackFinder
 
 			textBoxDistance.Text = settings.Distaice.ToString();
 
+			textBoxCopyToFilder.Text = settings.CopyToFilder;
+			buttonCopyToFilder.Enabled = settings.CopyToFilder.Length > 0;
+
 			initDataGridView();
 		}
 
@@ -153,6 +156,8 @@ namespace GpsTrackFinder
 
 			if (textBoxDistance.Text.Length > 0)
 				settings.Distaice =	Convert.ToInt32(textBoxDistance.Text, invC);
+
+			settings.CopyToFilder = textBoxCopyToFilder.Text;
 		}
 
 		/// <summary>
@@ -328,6 +333,8 @@ namespace GpsTrackFinder
 			TimeSpan tSpan = sWatch.Elapsed;
 		}
 
+		/// <summary>
+		/// Обрабатывает треки в указанной папке.</summary>
 		private void folderWalker(ref BackgroundWorker bgw, string path)
 		{
 			if (!bgw.CancellationPending)
@@ -356,6 +363,52 @@ namespace GpsTrackFinder
 				foreach (var folder in d.GetDirectories())
 					folderWalker(ref bgw, path + "\\" + folder.Name);
 			}
+		}
+
+		/// <summary>
+		/// Позволяет сменить папку для копирования треков.</summary>
+		private void buttonDrowseCopyToFilder_Click(object sender, EventArgs e)
+		{
+			string newFolder = getFolder();
+			if (newFolder.Length > 0)
+			{
+				textBoxCopyToFilder.Text = newFolder;
+				settings.CopyToFilder = newFolder;
+			}
+		}
+
+		/// <summary>
+		/// Копирует выделенные треки в указанную папку.</summary>
+		private void buttonCopyToFilder_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				settings.CopyToFilder = textBoxCopyToFilder.Text;
+				List<string> fileNames = getSelectedFilenames();
+				foreach (string item in fileNames)
+				{
+					FileInfo fn = new FileInfo(item);
+					fn.CopyTo(settings.CopyToFilder + "\\" + fn.Name, true);
+				}
+			}
+			catch (IOException ioex)
+			{
+				const string caption = "Ошибка при копировании файла";
+				MessageBox.Show(ioex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			catch (Exception ioex)
+			{
+				const string caption = "Ошибка при копировании файла";
+				MessageBox.Show(ioex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		/// <summary>
+		/// Отслеживает смену текста в пути для копирования треков.</summary>
+		private void textBoxCopyToFilder_TextChanged(object sender, EventArgs e)
+		{
+			settings.CopyToFilder = textBoxCopyToFilder.Text;
+			buttonCopyToFilder.Enabled = settings.CopyToFilder.Length > 0;
 		}
 	}
 
