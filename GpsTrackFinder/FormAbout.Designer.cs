@@ -62,7 +62,7 @@ namespace GpsTrackFinder
 			// 
 			// buttonClose
 			// 
-			this.buttonClose.Location = new System.Drawing.Point(260, 268);
+			this.buttonClose.Location = new System.Drawing.Point(260, 295);
 			this.buttonClose.Name = "buttonClose";
 			this.buttonClose.Size = new System.Drawing.Size(75, 23);
 			this.buttonClose.TabIndex = 0;
@@ -73,7 +73,7 @@ namespace GpsTrackFinder
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(118, 175);
+			this.label1.Location = new System.Drawing.Point(118, 202);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(114, 13);
 			this.label1.TabIndex = 2;
@@ -82,7 +82,7 @@ namespace GpsTrackFinder
 			// linkEmail
 			// 
 			this.linkEmail.AutoSize = true;
-			this.linkEmail.Location = new System.Drawing.Point(240, 175);
+			this.linkEmail.Location = new System.Drawing.Point(240, 202);
 			this.linkEmail.Name = "linkEmail";
 			this.linkEmail.Size = new System.Drawing.Size(125, 13);
 			this.linkEmail.TabIndex = 3;
@@ -93,7 +93,7 @@ namespace GpsTrackFinder
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(150, 195);
+			this.label2.Location = new System.Drawing.Point(150, 222);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(82, 13);
 			this.label2.TabIndex = 4;
@@ -102,7 +102,7 @@ namespace GpsTrackFinder
 			// linkLabel1
 			// 
 			this.linkLabel1.AutoSize = true;
-			this.linkLabel1.Location = new System.Drawing.Point(240, 195);
+			this.linkLabel1.Location = new System.Drawing.Point(240, 222);
 			this.linkLabel1.Name = "linkLabel1";
 			this.linkLabel1.Size = new System.Drawing.Size(206, 13);
 			this.linkLabel1.TabIndex = 5;
@@ -113,7 +113,7 @@ namespace GpsTrackFinder
 			// linkLabel2
 			// 
 			this.linkLabel2.AutoSize = true;
-			this.linkLabel2.Location = new System.Drawing.Point(240, 217);
+			this.linkLabel2.Location = new System.Drawing.Point(240, 244);
 			this.linkLabel2.Name = "linkLabel2";
 			this.linkLabel2.Size = new System.Drawing.Size(231, 13);
 			this.linkLabel2.TabIndex = 6;
@@ -124,7 +124,7 @@ namespace GpsTrackFinder
 			// label3
 			// 
 			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(106, 217);
+			this.label3.Location = new System.Drawing.Point(106, 244);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(126, 13);
 			this.label3.TabIndex = 7;
@@ -133,7 +133,7 @@ namespace GpsTrackFinder
 			// label4
 			// 
 			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(172, 240);
+			this.label4.Location = new System.Drawing.Point(172, 267);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(60, 13);
 			this.label4.TabIndex = 8;
@@ -142,7 +142,7 @@ namespace GpsTrackFinder
 			// linkLabel3
 			// 
 			this.linkLabel3.AutoSize = true;
-			this.linkLabel3.Location = new System.Drawing.Point(240, 240);
+			this.linkLabel3.Location = new System.Drawing.Point(240, 267);
 			this.linkLabel3.Name = "linkLabel3";
 			this.linkLabel3.Size = new System.Drawing.Size(144, 13);
 			this.linkLabel3.TabIndex = 9;
@@ -154,7 +154,7 @@ namespace GpsTrackFinder
 			// 
 			this.richTextBox1.Location = new System.Drawing.Point(12, 12);
 			this.richTextBox1.Name = "richTextBox1";
-			this.richTextBox1.Size = new System.Drawing.Size(570, 148);
+			this.richTextBox1.Size = new System.Drawing.Size(570, 173);
 			this.richTextBox1.TabIndex = 10;
 			this.richTextBox1.Text = "";
 			// 
@@ -162,7 +162,7 @@ namespace GpsTrackFinder
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(594, 300);
+			this.ClientSize = new System.Drawing.Size(594, 329);
 			this.Controls.Add(this.richTextBox1);
 			this.Controls.Add(this.linkLabel3);
 			this.Controls.Add(this.label4);
