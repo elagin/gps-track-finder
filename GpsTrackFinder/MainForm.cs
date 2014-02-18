@@ -47,11 +47,15 @@ namespace GpsTrackFinder
 
 		/// <summary>
 		/// Индекс столбца для сортировки.</summary>
-		private int _sortColunm = 1;
+		private int _sortColunm = 2;
 
 		/// <summary>
 		/// Количество найденных треков.</summary>
 		private int _tracksFound = 0;
+
+		/// <summary>
+		/// CheckBox для переключения всех галок в столбце id.</summary>
+		CheckBox checkBox;
 
 		public MainForm()
 		{
@@ -90,7 +94,7 @@ namespace GpsTrackFinder
 			comboBoxLat.Items.Add(new ComboItem("N", 0));
 			comboBoxLat.Items.Add(new ComboItem("S", 1));
 
-			comboBoxLon.Items.Add(new ComboItem("E",+ 0));
+			comboBoxLon.Items.Add(new ComboItem("E", 0));
 			comboBoxLon.Items.Add(new ComboItem("W", 1));
 
 			_internalDegres.Lat = Drivers.getDeg(settings.CentralPoint.Lat);
@@ -127,6 +131,9 @@ namespace GpsTrackFinder
 			buttonCopyToFilder.Enabled = settings.CopyToFilder.Length > 0;
 
 			initDataGridView();
+
+			checkBox = new CheckBox();
+			checkBox.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
 		}
 
 		/// <summary>
@@ -159,7 +166,7 @@ namespace GpsTrackFinder
 			settings.SearchFolder = textBoxFindFolder.Text;
 
 			if (textBoxDistance.Text.Length > 0)
-				settings.Distaice =	Convert.ToInt32(textBoxDistance.Text, invC);
+				settings.Distaice = Convert.ToInt32(textBoxDistance.Text, invC);
 
 			settings.CopyToFilder = textBoxCopyToFilder.Text;
 		}
@@ -176,6 +183,8 @@ namespace GpsTrackFinder
 				string filepath = textBoxFindFolder.Text;
 				bgw.RunWorkerAsync();
 				buttonStart.Text = "Стоп";
+				checkBox.Checked = false;
+				_tracksFound = 0;
 				dataGridView1.DataSource = dt;
 				dataGridView1.Sort(dataGridView1.Columns[_sortColunm], ListSortDirection.Ascending);
 			}
@@ -241,7 +250,7 @@ namespace GpsTrackFinder
 				foreach (string item in fileNames)
 					buff.Append(item + Environment.NewLine);
 
-				if(buff.Length > 0)
+				if (buff.Length > 0)
 					Clipboard.SetData(DataFormats.Text, (Object)buff.ToString());
 			}
 			catch (Exception ex)
@@ -279,7 +288,6 @@ namespace GpsTrackFinder
 		private void checkAvaibleCtrls()
 		{
 			buttonStart.Enabled = (textBoxFindFolder.Text.Length > 0 && textBoxLat.Text.Length > 0 && textBoxLon.Text.Length > 0);
-			//buttonCopyPath.Enabled = false;
 			int count = 0;
 			foreach (DataGridViewRow item in dataGridView1.Rows)
 				if (item.Cells["id"].Value != null && (bool)item.Cells["id"].FormattedValue)
@@ -331,9 +339,7 @@ namespace GpsTrackFinder
 			catch (Exception ex)
 			{
 				const string caption = "Ошибка";
-				var result = MessageBox.Show(ex.Message, caption,
-											 MessageBoxButtons.OK,
-											 MessageBoxIcon.Error);
+				var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -435,6 +441,52 @@ namespace GpsTrackFinder
 		{
 			dataGridView1.CommitEdit(DataGridViewDataErrorContexts.Commit);
 			checkAvaibleCtrls();
+		}
+
+		/// <summary>
+		/// Событие при загрузке формы.</summary>
+		private void MainForm_Load(object sender, EventArgs e)
+		{
+			setCheckBoxPos();
+			dataGridView1.Controls.Add(checkBox);
+		}
+
+		/// <summary>
+		/// Событие при нажатии на переключатель галок.</summary>
+		void checkBox_CheckedChanged(object sender, EventArgs e)
+		{
+			foreach (DataGridViewRow item in dataGridView1.Rows)
+				item.Cells["id"].Value = checkBox.Checked;
+			checkAvaibleCtrls();
+		}
+
+		/// <summary>
+		/// Событие при изменении размеров формы</summary>
+		private void MainForm_Resize(object sender, EventArgs e)
+		{
+			setCheckBoxPos();
+		}
+
+		/// <summary>
+		/// Событие при изменении ширины столбца</summary>
+		private void dataGridView1_ColumnWidthChanged(object sender, DataGridViewColumnEventArgs e)
+		{
+			if(e.Column.Name.Equals("id"))
+				setCheckBoxPos();
+		}
+
+		/// <summary>
+		/// Устанавливает checkBox на нужное место.</summary>
+		private void setCheckBoxPos()
+		{
+			if (checkBox != null)
+			{
+				Rectangle rect = dataGridView1.GetCellDisplayRectangle(0, -1, true);
+				checkBox.Size = new Size(18, 18);
+				checkBox.Location = new Point(
+					rect.Left + rect.Width / 2 - checkBox.Size.Width / 2 + 1,
+					rect.Top + rect.Height / 2 - checkBox.Size.Height / 2);
+			}
 		}
 	}
 
