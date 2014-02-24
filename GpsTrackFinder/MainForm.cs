@@ -37,7 +37,7 @@ namespace GpsTrackFinder
 	{
 		/// <summary>
 		/// Хранит настройки.</summary>
-		private Settings settings = new Settings("config");	// Настройки
+		private Settings settings = new Settings("config");
 		private DataTable dt = new DataTable();
 
 		private GpsPoint _internalDegres = new GpsPoint();
@@ -294,6 +294,7 @@ namespace GpsTrackFinder
 					count++;
 			buttonCopyPath.Enabled = count > 0;
 			buttonOpenFolder.Enabled = count > 0;
+			buttonDelete.Enabled = count > 0;
 			buttonCopyToFilder.Enabled = (settings.CopyToFilder.Length > 0 && count > 0);
 			labelFoundInfo.Text = String.Format("Найдено/выбрано: {0}/{1}", _tracksFound, count);
 		}
@@ -432,6 +433,38 @@ namespace GpsTrackFinder
 			{
 				const string caption = "Ошибка при копировании файла";
 				MessageBox.Show(ioex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		/// <summary>
+		/// Удаляет выделенные треки.</summary>
+		private void buttonDelete_Click(object sender, EventArgs e)
+		{
+			List<string> fileNames = getSelectedFilenames();
+			string message = String.Format("Вы действительно хотите удалить {0} треков?", fileNames.Count);
+			if (MessageBox.Show(message, "Внимание", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+			{
+				foreach (string item in fileNames)
+				{
+					try
+					{
+						File.Delete(item);
+						foreach (DataRow row in dt.Rows)
+						{
+							if (row["filename"].Equals(item))
+							{
+								row.Delete();
+								break;
+							}
+						}
+					}
+					catch (Exception ex)
+					{
+						string caption = "Ошибка при удалении файла.";
+						MessageBox.Show(item + Environment.NewLine + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
+				}
+				checkAvaibleCtrls();
 			}
 		}
 
