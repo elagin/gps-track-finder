@@ -134,6 +134,7 @@ namespace GpsTrackFinder
 
 			checkBox = new CheckBox();
 			checkBox.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
+			checkBox.Size = new Size(18, 18);
 		}
 
 		/// <summary>
@@ -505,6 +506,12 @@ namespace GpsTrackFinder
 		{
 			foreach (DataGridViewRow item in dataGridView1.Rows)
 				item.Cells["id"].Value = checkBox.Checked;
+
+// todo: Попытка исправить ошибку с выбором элементов
+/*
+			foreach (DataRow item in dt.Rows)
+				item["id"] = checkBox.Checked;
+*/
 			checkAvaibleCtrls();
 		}
 
@@ -519,7 +526,7 @@ namespace GpsTrackFinder
 		/// Событие при изменении ширины столбца</summary>
 		private void dataGridView1_ColumnWidthChanged(object sender, DataGridViewColumnEventArgs e)
 		{
-			if(e.Column.Name.Equals("id"))
+			if (e.Column.Name.Equals("id"))
 				setCheckBoxPos();
 		}
 
@@ -530,7 +537,6 @@ namespace GpsTrackFinder
 			if (checkBox != null)
 			{
 				Rectangle rect = dataGridView1.GetCellDisplayRectangle(0, -1, true);
-				checkBox.Size = new Size(18, 18);
 				checkBox.Location = new Point(
 					rect.Left + rect.Width / 2 - checkBox.Size.Width / 2 + 1,
 					rect.Top + rect.Height / 2 - checkBox.Size.Height / 2);
