@@ -359,7 +359,7 @@ namespace GpsTrackFinder
 		/// Вторичный поток работу закончил.</summary>
 		void bgw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
-			sWatch.Stop();						// Останавливаем таймер
+			sWatch.Stop();
 			buttonStart.Text = "Старт";
 			labelCurrentFolder.Text = "Поиск: завершен";
 			TimeSpan tSpan = sWatch.Elapsed;
@@ -414,25 +414,40 @@ namespace GpsTrackFinder
 		/// Копирует выделенные треки в указанную папку.</summary>
 		private void buttonCopyToFilder_Click(object sender, EventArgs e)
 		{
+			EFileExist behavior = EFileExist.Unknown;
 			try
 			{
 				settings.CopyToFilder = textBoxCopyToFilder.Text;
+				if (!System.IO.Directory.Exists(settings.CopyToFilder))
+					System.IO.Directory.CreateDirectory(settings.CopyToFilder);
+
 				List<string> fileNames = getSelectedFilenames();
 				foreach (string item in fileNames)
 				{
-					FileInfo fn = new FileInfo(item);
-					fn.CopyTo(settings.CopyToFilder + "\\" + fn.Name, true);
+					FileInfo infoSrc = new FileInfo(item);
+					
+					string fileNameDst = settings.CopyToFilder + "\\" + infoSrc.Name;
+					FileInfo infoDst = new FileInfo(fileNameDst);
+
+					if (infoDst.Exists && (behavior == EFileExist.Unknown || behavior == EFileExist.Skip || behavior == EFileExist.Override))
+					{
+						using (FileExistForm form = new FileExistForm(fileNameDst))
+						{
+							DialogResult resDlg = form.ShowDialog();
+							behavior = form.ReturnValue1;
+						}
+						if (behavior == EFileExist.Cancel)
+							break;
+					}
+
+					if (!infoDst.Exists || behavior == EFileExist.OverrideAll || behavior == EFileExist.Override)
+						infoSrc.CopyTo(fileNameDst, true);
 				}
 			}
-			catch (IOException ioex)
+			catch (Exception ex)
 			{
 				const string caption = "Ошибка при копировании файла";
-				MessageBox.Show(ioex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-			}
-			catch (Exception ioex)
-			{
-				const string caption = "Ошибка при копировании файла";
-				MessageBox.Show(ioex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -550,5 +565,18 @@ namespace GpsTrackFinder
 			return Name;
 		}
 	}
+
+	/// <summary>
+	/// Результат формы "файл существует"</summary>
+	public enum EFileExist
+	{
+		Unknown,
+		Override,
+		OverrideAll,
+		Skip,
+		SkipAll,
+		Cancel,
+	};
+
 }
 
