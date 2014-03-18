@@ -217,7 +217,7 @@ namespace GpsTrackFinder
 			OpenFileDialog dlg = new OpenFileDialog();
 
 			dlg.InitialDirectory = textBoxFindFolder.Text;
-			dlg.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+			dlg.Filter = "Все (*.*)|*.*|wpt (*.wpt)|*.wpt";
 			dlg.FilterIndex = 2;
 			dlg.RestoreDirectory = true;
 
@@ -402,9 +402,18 @@ namespace GpsTrackFinder
 			if (!bgw.CancellationPending)
 			{
 				DirectoryInfo d = new DirectoryInfo(path);
-				foreach (var file in d.GetFiles("*.plt"))
+
+				string[] extensions = new[] { ".plt", ".gpx" };
+
+				FileInfo[] files = d.GetFiles().Where(f => extensions.Contains(f.Extension.ToLower())).ToArray();
+				foreach (var file in files)
 				{
-					TrackStat stat = Drivers.ParsePlt(settings.Distaice, file.FullName, points);
+					TrackStat stat = new TrackStat();
+
+					if(file.Extension == ".plt")
+						stat = Drivers.ParsePlt(settings.Distaice, file.FullName, points);
+					else if(file.Extension == ".gpx")
+						stat = Drivers.ParseGpx(settings.Distaice, file.FullName, points);
 
 					if (settings.Distaice * 1000 > (int)stat.MinDist)
 					{
@@ -455,7 +464,7 @@ namespace GpsTrackFinder
 				foreach (string item in fileNames)
 				{
 					FileInfo infoSrc = new FileInfo(item);
-					
+
 					string fileNameDst = settings.CopyToFilder + "\\" + infoSrc.Name;
 					FileInfo infoDst = new FileInfo(fileNameDst);
 
@@ -536,11 +545,11 @@ namespace GpsTrackFinder
 			foreach (DataGridViewRow item in dataGridView1.Rows)
 				item.Cells["id"].Value = checkBox.Checked;
 
-// todo: Попытка исправить ошибку с выбором элементов
-/*
-			foreach (DataRow item in dt.Rows)
-				item["id"] = checkBox.Checked;
-*/
+			// todo: Попытка исправить ошибку с выбором элементов
+			/*
+						foreach (DataRow item in dt.Rows)
+							item["id"] = checkBox.Checked;
+			*/
 			checkAvaibleCtrls();
 		}
 

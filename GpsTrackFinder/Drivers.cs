@@ -28,6 +28,7 @@ using System.Globalization;
 using System.Diagnostics;
 using System.ComponentModel;
 using System.Data;
+using System.Xml;
 
 namespace GpsTrackFinder
 {
@@ -111,7 +112,7 @@ namespace GpsTrackFinder
 			set { _lon = value; }
 		}
 	}
-	
+
 	class Drivers
 	{
 		/// <summary>
@@ -142,6 +143,38 @@ namespace GpsTrackFinder
 			double ad = Math.Atan2(y, x);
 			double dist = ad * rad;
 			return dist;
+		}
+
+		/// <summary>
+		/// Парсинг GPX-файла.</summary>
+		public static TrackStat ParseGpx(int aDist, string XML, List<GpsPoint> points)
+		{
+			GpsPoint prevPoint = null;
+			TrackStat res = new TrackStat();
+
+			try
+			{
+				using (FileStream fs = new FileStream(XML, FileMode.Open))
+				{
+					using (XmlReader tr = XmlReader.Create(fs))
+					{
+						while (tr.Read())
+						{
+							if (tr.NodeType == XmlNodeType.Element && tr.Name == "trkpt")
+							{
+								string lat = tr.GetAttribute("lat");
+								string lon = tr.GetAttribute("lon");
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				string caption = "Произошла ошибка при работе с файлом.";
+				var result = MessageBox.Show(XML + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			return res;
 		}
 
 		/// <summary>
