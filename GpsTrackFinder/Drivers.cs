@@ -146,7 +146,7 @@ namespace GpsTrackFinder
 
 		/// <summary>
 		/// Парсинг PLT-файла.</summary>
-		public static TrackStat ParsePlt(GpsPoint searchPoint, int aDist, string fileName)
+		public static TrackStat ParsePlt(int aDist, string fileName, List<GpsPoint> points)
 		{
 			GpsPoint prevPoint = null;
 			TrackStat stat = new TrackStat();
@@ -179,9 +179,13 @@ namespace GpsTrackFinder
 									prevPoint = tmp;
 
 								stat.Points++;
-								double dist = calcDist(searchPoint, tmp);
-								if (MinDist > dist)
-									MinDist = dist;
+
+								foreach (GpsPoint item in points)
+								{
+									double dist = calcDist(item, tmp);
+									if (MinDist > dist)
+										MinDist = dist;
+								}
 							}
 							catch (Exception ex)
 							{
@@ -202,6 +206,55 @@ namespace GpsTrackFinder
 				var result = MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 			return stat;
+		}
+
+		/// <summary>
+		/// Парсинг WPT-файла.</summary>
+		public static List<GpsPoint> ParseWpt(string fileName)
+		{
+			List<GpsPoint> res = new List<GpsPoint>();
+
+			if (fileName.Length == 0)
+			{
+				return res;
+			}
+
+			try
+			{
+				using (StreamReader file = new StreamReader(fileName))
+				{
+					double MinDist = double.MaxValue;
+					int lineNumber = 6;
+
+					for (int i = 0; i < 4; i++)		// Пропускаем заголовок
+						file.ReadLine();
+
+					while (!file.EndOfStream)
+					{
+						string line = file.ReadLine();
+						if (line.Length > 0)
+						{
+							try
+							{
+								string[] split = line.Split(',');
+								GpsPoint tmp = new GpsPoint(split[2], split[3]);
+								res.Add(tmp);
+							}
+							catch (Exception ex)
+							{
+								string caption = "Произошла ошибка при работе с файлом.";
+								var result = MessageBox.Show(fileName + "\r\n" + "в строке: " + Convert.ToString(lineNumber) + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				string caption = "Произошла ошибка при работе с файлом.";
+				var result = MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			return res;
 		}
 
 		/// <summary>

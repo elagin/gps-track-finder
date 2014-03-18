@@ -130,6 +130,8 @@ namespace GpsTrackFinder
 			textBoxCopyToFilder.Text = settings.CopyToFilder;
 			buttonCopyToFilder.Enabled = settings.CopyToFilder.Length > 0;
 
+			textBoxWptFile.Text = settings.WptFileName;
+
 			initDataGridView();
 
 			checkBox = new CheckBox();
@@ -170,6 +172,7 @@ namespace GpsTrackFinder
 				settings.Distaice = Convert.ToInt32(textBoxDistance.Text, invC);
 
 			settings.CopyToFilder = textBoxCopyToFilder.Text;
+			settings.WptFileName = textBoxWptFile.Text;
 		}
 
 		/// <summary>
@@ -206,6 +209,25 @@ namespace GpsTrackFinder
 			else
 				return "";
 		}
+
+		/// <summary>
+		/// Отображает диалог указания файла.</summary>
+		private string getFileName()
+		{
+			OpenFileDialog dlg = new OpenFileDialog();
+
+			dlg.InitialDirectory = textBoxFindFolder.Text;
+			dlg.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+			dlg.FilterIndex = 2;
+			dlg.RestoreDirectory = true;
+
+			DialogResult result = dlg.ShowDialog();
+			if (result == DialogResult.OK)
+				return dlg.FileName;
+			else
+				return "";
+		}
+
 
 		/// <summary>
 		/// Обработка нажатия кнопки смены папки поиска.</summary>
@@ -288,7 +310,7 @@ namespace GpsTrackFinder
 		/// Проверяет доступность элементов UI для пользователя.</summary>
 		private void checkAvaibleCtrls()
 		{
-			buttonStart.Enabled = (textBoxFindFolder.Text.Length > 0 && textBoxLat.Text.Length > 0 && textBoxLon.Text.Length > 0);
+			buttonStart.Enabled = (textBoxFindFolder.Text.Length > 0 && (textBoxWptFile.Text.Length > 0 || (textBoxLat.Text.Length > 0 && textBoxLon.Text.Length > 0)));
 			int count = 0;
 			foreach (DataGridViewRow item in dataGridView1.Rows)
 				if (item.Cells["id"].Value != null && (bool)item.Cells["id"].FormattedValue)
@@ -301,6 +323,11 @@ namespace GpsTrackFinder
 		}
 
 		private void textBoxFindFolder_TextChanged(object sender, EventArgs e)
+		{
+			checkAvaibleCtrls();
+		}
+
+		private void textBoxWptFile_TextChanged(object sender, EventArgs e)
 		{
 			checkAvaibleCtrls();
 		}
@@ -336,7 +363,9 @@ namespace GpsTrackFinder
 		{
 			try
 			{
-				folderWalker(ref bgw, settings.SearchFolder);
+				List<GpsPoint> list = Drivers.ParseWpt(settings.WptFileName);
+				list.Add(_internalDegres);
+				folderWalker(ref bgw, settings.SearchFolder, list);
 			}
 			catch (Exception ex)
 			{
@@ -368,14 +397,14 @@ namespace GpsTrackFinder
 
 		/// <summary>
 		/// Обрабатывает треки в указанной папке.</summary>
-		private void folderWalker(ref BackgroundWorker bgw, string path)
+		private void folderWalker(ref BackgroundWorker bgw, string path, List<GpsPoint> points)
 		{
 			if (!bgw.CancellationPending)
 			{
 				DirectoryInfo d = new DirectoryInfo(path);
 				foreach (var file in d.GetFiles("*.plt"))
 				{
-					TrackStat stat = Drivers.ParsePlt(_internalDegres, settings.Distaice, file.FullName);
+					TrackStat stat = Drivers.ParsePlt(settings.Distaice, file.FullName, points);
 
 					if (settings.Distaice * 1000 > (int)stat.MinDist)
 					{
@@ -395,7 +424,7 @@ namespace GpsTrackFinder
 					}
 				}
 				foreach (var folder in d.GetDirectories())
-					folderWalker(ref bgw, path + "\\" + folder.Name);
+					folderWalker(ref bgw, path + "\\" + folder.Name, points);
 			}
 		}
 
@@ -542,6 +571,16 @@ namespace GpsTrackFinder
 					rect.Top + rect.Height / 2 - checkBox.Size.Height / 2);
 			}
 		}
+
+		private void buttonWptBrowse_Click(object sender, EventArgs e)
+		{
+			string newFile = getFileName();
+			if (newFile.Length > 0)
+			{
+				textBoxWptFile.Text = newFile;
+				settings.WptFileName = newFile;
+			}
+		}
 	}
 
 	/// <summary>
@@ -583,6 +622,5 @@ namespace GpsTrackFinder
 		SkipAll,
 		Cancel,
 	};
-
 }
 

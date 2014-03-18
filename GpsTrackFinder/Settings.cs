@@ -65,6 +65,7 @@ public class Settings
 	private string _filename;
 	private string _searchFolder;
 	private string _сopyToFilder;
+	private string _wptFileName;
 	private SettingsGpsPoint _centralPoint;
 	private int _dist;
 
@@ -84,6 +85,12 @@ public class Settings
 	{
 		get { return _сopyToFilder; }
 		set { _сopyToFilder = value; }
+	}
+
+	public string WptFileName
+	{
+		get { return _wptFileName; }
+		set { _wptFileName = value; }
 	}
 
 	public int Distaice
@@ -192,6 +199,8 @@ public class Settings
 			this.CentralPoint = Obj.CentralPoint;
 		if (Obj.CopyToFilder != null)
 			this.CopyToFilder = Obj.CopyToFilder;
+		if (Obj.WptFileName != null)
+			this.WptFileName = Obj.WptFileName;
 	}
 }
 
