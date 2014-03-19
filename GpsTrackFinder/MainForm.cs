@@ -137,6 +137,12 @@ namespace GpsTrackFinder
 			checkBox = new CheckBox();
 			checkBox.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
 			checkBox.Size = new Size(18, 18);
+
+			if(settings.SearchSubFolder)
+				checkBoxWithSubFilder.CheckState = CheckState.Checked;
+
+			checkBoxPos.Checked = settings.SearchByPos;
+			checkBoxWpt.Checked = settings.SearchByWpt;
 		}
 
 		/// <summary>
@@ -173,6 +179,9 @@ namespace GpsTrackFinder
 
 			settings.CopyToFilder = textBoxCopyToFilder.Text;
 			settings.WptFileName = textBoxWptFile.Text;
+			settings.SearchSubFolder = checkBoxWithSubFilder.Checked;
+			settings.SearchByPos = checkBoxPos.Checked;
+			settings.SearchByWpt = checkBoxWpt.Checked;
 		}
 
 		/// <summary>
@@ -184,7 +193,6 @@ namespace GpsTrackFinder
 				SaveCtrls();
 				dt.Clear();
 
-				string filepath = textBoxFindFolder.Text;
 				bgw.RunWorkerAsync();
 				buttonStart.Text = "Стоп";
 				checkBox.Checked = false;
@@ -320,6 +328,16 @@ namespace GpsTrackFinder
 			buttonDelete.Enabled = count > 0;
 			buttonCopyToFilder.Enabled = (settings.CopyToFilder.Length > 0 && count > 0);
 			labelFoundInfo.Text = String.Format("Найдено/выбрано: {0}/{1}", _tracksFound, count);
+
+			// Реакция на выбор способов поиска
+			comboBoxLat.Enabled = checkBoxPos.Checked;
+			textBoxLat.Enabled = checkBoxPos.Checked;
+			comboBoxLon.Enabled = checkBoxPos.Checked;
+			textBoxLon.Enabled = checkBoxPos.Checked;
+			textBoxWptFile.Enabled = checkBoxWpt.Checked;
+			buttonWptBrowse.Enabled = checkBoxWpt.Checked;
+			buttonStart.Enabled = (checkBoxWpt.Checked || checkBoxPos.Checked);
+			// ---
 		}
 
 		private void textBoxFindFolder_TextChanged(object sender, EventArgs e)
@@ -357,15 +375,29 @@ namespace GpsTrackFinder
 			_sortColunm = e.ColumnIndex;
 		}
 
+		private void checkBoxPos_CheckedChanged(object sender, EventArgs e)
+		{
+			checkAvaibleCtrls();
+		}
+
+		private void checkBoxWpt_CheckedChanged(object sender, EventArgs e)
+		{
+			checkAvaibleCtrls();
+		}
+
 		/// <summary>
 		/// Задача вторичного потока.</summary>
 		void bgw_DoWork(object sender, DoWorkEventArgs e)
 		{
 			try
 			{
-				List<GpsPoint> list = Drivers.ParseWpt(settings.WptFileName);
-				list.Add(_internalDegres);
-				folderWalker(ref bgw, settings.SearchFolder, list);
+				List<GpsPoint> list = new List<GpsPoint>();
+				if (settings.SearchByPos)
+					list.Add(_internalDegres);
+				if (settings.SearchByWpt)
+					Drivers.ParseWpt(settings.WptFileName, ref list);
+
+				folderWalker(ref bgw, settings.SearchFolder, settings.SearchSubFolder, list);
 			}
 			catch (Exception ex)
 			{
@@ -397,7 +429,7 @@ namespace GpsTrackFinder
 
 		/// <summary>
 		/// Обрабатывает треки в указанной папке.</summary>
-		private void folderWalker(ref BackgroundWorker bgw, string path, List<GpsPoint> points)
+		private void folderWalker(ref BackgroundWorker bgw, string path, bool searchSubFolder, List<GpsPoint> points)
 		{
 			if (!bgw.CancellationPending)
 			{
@@ -432,8 +464,9 @@ namespace GpsTrackFinder
 						bgw.ReportProgress(0, state);  // Обновляем информацию о результатах работы.
 					}
 				}
-				foreach (var folder in d.GetDirectories())
-					folderWalker(ref bgw, path + "\\" + folder.Name, points);
+				if (searchSubFolder)
+					foreach (var folder in d.GetDirectories())
+						folderWalker(ref bgw, path + "\\" + folder.Name, searchSubFolder, points);
 			}
 		}
 

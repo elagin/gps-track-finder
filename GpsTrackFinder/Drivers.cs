@@ -153,6 +153,7 @@ namespace GpsTrackFinder
 		{
 			GpsPoint prevPoint = null;
 			TrackStat res = new TrackStat();
+			res.FileName = fileName;
 
 			try
 			{
@@ -161,7 +162,6 @@ namespace GpsTrackFinder
 					using (XmlReader tr = XmlReader.Create(fs))
 					{
 						double MinDist = double.MaxValue;
-
 						while (tr.Read())
 						{
 							if (tr.NodeType == XmlNodeType.Element && tr.Name == "trkpt")
@@ -184,14 +184,13 @@ namespace GpsTrackFinder
 						}
 						if (MinDist < double.MaxValue)
 							res.MinDist = MinDist;
-						res.FileName = fileName;
 					}
 				}
 			}
 			catch (Exception ex)
 			{
 				string caption = "Произошла ошибка при работе с файлом.";
-				var result = MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 			return res;
 		}
@@ -253,58 +252,52 @@ namespace GpsTrackFinder
 			catch (Exception ex)
 			{
 				string caption = "Произошла ошибка при работе с файлом.";
-				var result = MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 			return res;
 		}
 
 		/// <summary>
 		/// Парсинг WPT-файла.</summary>
-		public static List<GpsPoint> ParseWpt(string fileName)
+		public static void ParseWpt(string fileName, ref List<GpsPoint> res)
 		{
-			List<GpsPoint> res = new List<GpsPoint>();
-
-			if (fileName.Length == 0)
+			if (fileName.Length > 0)
 			{
-				return res;
-			}
-
-			try
-			{
-				using (StreamReader file = new StreamReader(fileName))
+				try
 				{
-					double MinDist = double.MaxValue;
-					int lineNumber = 6;
-
-					for (int i = 0; i < 4; i++)		// Пропускаем заголовок
-						file.ReadLine();
-
-					while (!file.EndOfStream)
+					using (StreamReader file = new StreamReader(fileName))
 					{
-						string line = file.ReadLine();
-						if (line.Length > 0)
+						int lineNumber = 6;
+
+						for (int i = 0; i < 4; i++)		// Пропускаем заголовок
+							file.ReadLine();
+
+						while (!file.EndOfStream)
 						{
-							try
+							string line = file.ReadLine();
+							if (line.Length > 0)
 							{
-								string[] split = line.Split(',');
-								GpsPoint tmp = new GpsPoint(split[2], split[3]);
-								res.Add(tmp);
-							}
-							catch (Exception ex)
-							{
-								string caption = "Произошла ошибка при работе с файлом.";
-								var result = MessageBox.Show(fileName + "\r\n" + "в строке: " + Convert.ToString(lineNumber) + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+								try
+								{
+									string[] split = line.Split(',');
+									GpsPoint tmp = new GpsPoint(split[2], split[3]);
+									res.Add(tmp);
+								}
+								catch (Exception ex)
+								{
+									string caption = "Произошла ошибка при работе с файлом.";
+									var result = MessageBox.Show(fileName + "\r\n" + "в строке: " + Convert.ToString(lineNumber) + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+								}
 							}
 						}
 					}
 				}
+				catch (Exception ex)
+				{
+					string caption = "Произошла ошибка при работе с файлом.";
+					var result = MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
 			}
-			catch (Exception ex)
-			{
-				string caption = "Произошла ошибка при работе с файлом.";
-				var result = MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-			}
-			return res;
 		}
 
 		/// <summary>

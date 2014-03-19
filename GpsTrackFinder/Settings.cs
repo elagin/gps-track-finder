@@ -68,6 +68,9 @@ public class Settings
 	private string _wptFileName;
 	private SettingsGpsPoint _centralPoint;
 	private int _dist;
+	private bool _searchSubFolder;
+	private bool _searchByPos;
+	private bool _searchByWpt;
 
 	public SettingsGpsPoint CentralPoint
 	{
@@ -97,6 +100,24 @@ public class Settings
 	{
 		get { return _dist; }
 		set { _dist = value; }
+	}
+
+	public bool SearchSubFolder
+	{
+		get { return _searchSubFolder; }
+		set { _searchSubFolder = value; }
+	}
+
+	public bool SearchByPos
+	{
+		get { return _searchByPos; }
+		set { _searchByPos = value; }
+	}
+
+	public bool SearchByWpt
+	{
+		get { return _searchByWpt; }
+		set { _searchByWpt = value; }
 	}
 
 	public Settings()
@@ -201,6 +222,9 @@ public class Settings
 			this.CopyToFilder = Obj.CopyToFilder;
 		if (Obj.WptFileName != null)
 			this.WptFileName = Obj.WptFileName;
+		this.SearchSubFolder = Obj.SearchSubFolder;
+		this.SearchByPos = Obj.SearchByPos;
+		this._searchByWpt = Obj._searchByWpt;
 	}
 }
 
