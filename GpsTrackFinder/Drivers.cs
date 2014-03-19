@@ -34,6 +34,8 @@ namespace GpsTrackFinder
 {
 	enum State { grad, min, sec, end };
 
+	/// <summary>
+	/// Хранит статистику по файлу.</summary>
 	public class TrackStat
 	{
 		private double _length;
@@ -147,32 +149,49 @@ namespace GpsTrackFinder
 
 		/// <summary>
 		/// Парсинг GPX-файла.</summary>
-		public static TrackStat ParseGpx(int aDist, string XML, List<GpsPoint> points)
+		public static TrackStat ParseGpx(int aDist, string fileName, List<GpsPoint> points)
 		{
 			GpsPoint prevPoint = null;
 			TrackStat res = new TrackStat();
 
 			try
 			{
-				using (FileStream fs = new FileStream(XML, FileMode.Open))
+				using (FileStream fs = new FileStream(fileName, FileMode.Open))
 				{
 					using (XmlReader tr = XmlReader.Create(fs))
 					{
+						double MinDist = double.MaxValue;
+
 						while (tr.Read())
 						{
 							if (tr.NodeType == XmlNodeType.Element && tr.Name == "trkpt")
 							{
-								string lat = tr.GetAttribute("lat");
-								string lon = tr.GetAttribute("lon");
+								GpsPoint tmp = new GpsPoint(tr.GetAttribute("lat"), tr.GetAttribute("lon"));
+								if (prevPoint != null)
+								{
+									res.Length += calcDist(prevPoint, tmp);
+								}
+								prevPoint = tmp;
+								res.Points++;
+
+								foreach (GpsPoint item in points)
+								{
+									double dist = calcDist(item, tmp);
+									if (MinDist > dist)
+										MinDist = dist;
+								}
 							}
 						}
+						if (MinDist < double.MaxValue)
+							res.MinDist = MinDist;
+						res.FileName = fileName;
 					}
 				}
 			}
 			catch (Exception ex)
 			{
 				string caption = "Произошла ошибка при работе с файлом.";
-				var result = MessageBox.Show(XML + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+				var result = MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 			return res;
 		}
@@ -182,7 +201,7 @@ namespace GpsTrackFinder
 		public static TrackStat ParsePlt(int aDist, string fileName, List<GpsPoint> points)
 		{
 			GpsPoint prevPoint = null;
-			TrackStat stat = new TrackStat();
+			TrackStat res = new TrackStat();
 
 			try
 			{
@@ -205,13 +224,11 @@ namespace GpsTrackFinder
 								GpsPoint tmp = new GpsPoint(split[0], split[1]);
 								if (prevPoint != null)
 								{
-									stat.Length += calcDist(prevPoint, tmp);
-									prevPoint = tmp;
+									res.Length += calcDist(prevPoint, tmp);
 								}
-								else
-									prevPoint = tmp;
+								prevPoint = tmp;
 
-								stat.Points++;
+								res.Points++;
 
 								foreach (GpsPoint item in points)
 								{
@@ -229,8 +246,8 @@ namespace GpsTrackFinder
 						lineNumber++;
 					}
 					if (MinDist < double.MaxValue)
-						stat.MinDist = MinDist;
-					stat.FileName = fileName;
+						res.MinDist = MinDist;
+					res.FileName = fileName;
 				}
 			}
 			catch (Exception ex)
@@ -238,7 +255,7 @@ namespace GpsTrackFinder
 				string caption = "Произошла ошибка при работе с файлом.";
 				var result = MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
-			return stat;
+			return res;
 		}
 
 		/// <summary>
