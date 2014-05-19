@@ -80,6 +80,7 @@ namespace GpsTrackFinder
 			dt.Columns.Add("length", typeof(int));
 			dt.Columns.Add("points", typeof(int));
 			dt.Columns.Add("points_p_m", typeof(double));
+			dt.Columns.Add("max_speed", typeof(double));
 		}
 
 		/// <summary>
@@ -105,7 +106,6 @@ namespace GpsTrackFinder
 			{
 				comboBoxLat.SelectedIndex = 1;
 				settings.CentralPoint.Lat = settings.CentralPoint.Lat.Remove(0, 1);
-				//settings.CentralPoint.Lat = settings.CentralPoint.Lat * -1;
 			}
 			else
 				comboBoxLat.SelectedIndex = 0;
@@ -115,13 +115,12 @@ namespace GpsTrackFinder
 			{
 				comboBoxLon.SelectedIndex = 1;
 				settings.CentralPoint.Lon = settings.CentralPoint.Lon.Remove(0, 1);
-				//settings.CentralPoint.Lon = settings.CentralPoint.Lon * -1;
 			}
 			else
 				comboBoxLon.SelectedIndex = 0;
 
-			textBoxLat.Text = Convert.ToString(settings.CentralPoint.Lat);
-			textBoxLon.Text = Convert.ToString(settings.CentralPoint.Lon);
+			textBoxLat.Text = settings.CentralPoint.Lat;
+			textBoxLon.Text = settings.CentralPoint.Lon;
 
 			textBoxFindFolder.Text = settings.SearchFolder;
 
@@ -153,16 +152,11 @@ namespace GpsTrackFinder
 
 			if (textBoxLat.Text.Length > 0 && textBoxLon.Text.Length > 0)
 			{
-				//double lat = 0;
-				//double lon = 0;
-
-				//lat = Convert.ToDouble(textBoxLat.Text, invC);
 				if (comboBoxLat.SelectedIndex == 0)
 					settings.CentralPoint.Lat = textBoxLat.Text;
 				else
 					settings.CentralPoint.Lat = "-" + textBoxLat.Text;
 
-				//lon = Convert.ToDouble(textBoxLon.Text, invC);
 				if (comboBoxLon.SelectedIndex == 0)
 					settings.CentralPoint.Lon = textBoxLon.Text;
 				else
@@ -443,7 +437,7 @@ namespace GpsTrackFinder
 					TrackStat stat = new TrackStat();
 
 					if(file.Extension == ".plt")
-						stat = Drivers.ParsePlt(settings.Distaice, file.FullName, points);
+						stat = Drivers.ParsePlt(settings.Distaice, file.FullName, points, 80);
 					else if(file.Extension == ".gpx")
 						stat = Drivers.ParseGpx(settings.Distaice, file.FullName, points);
 
@@ -451,13 +445,14 @@ namespace GpsTrackFinder
 					{
 						WorkState state = new WorkState();
 
-						object[] arr = new object[6];
+						object[] arr = new object[7];
 						arr[0] = false;
 						arr[1] = stat.FileName;
 						arr[2] = (int)stat.MinDist;
 						arr[3] = (int)stat.Length;
 						arr[4] = stat.Points;
 						arr[5] = stat.Points / (stat.Length / 1000);
+						arr[6] = stat.MaxSpeed;
 
 						state.arr = arr;
 						state.path = path;
@@ -621,6 +616,26 @@ namespace GpsTrackFinder
 			{
 				textBoxWptFile.Text = newFile;
 				settings.WptFileName = newFile;
+			}
+		}
+
+		private void buttonCorrect_Click(object sender, EventArgs e)
+		{
+			//Открываем диалог с параметрами (макс скорость, перезаписывать, копировать в папку, переименовывать и т.д.)
+			//затем обходим треки
+			try
+			{
+				StringBuilder buff = new StringBuilder();
+				List<string> fileNames = getSelectedFilenames();
+				foreach (string item in fileNames)
+					buff.Append(item + Environment.NewLine);
+				//if (buff.Length > 0)
+					//Clipboard.SetData(DataFormats.Text, (Object)buff.ToString());
+			}
+			catch (Exception ex)
+			{
+				string caption = "Произошла ошибка при исправлении трека";
+				var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 	}
