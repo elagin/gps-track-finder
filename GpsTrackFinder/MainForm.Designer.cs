@@ -77,6 +77,7 @@ namespace GpsTrackFinder
 			this.points_p_m = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.max_speed = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.panel1 = new System.Windows.Forms.Panel();
+			this.buttonCorrect = new System.Windows.Forms.Button();
 			this.buttonDelete = new System.Windows.Forms.Button();
 			this.buttonCopyToFilder = new System.Windows.Forms.Button();
 			this.buttonDrowseCopyToFilder = new System.Windows.Forms.Button();
@@ -93,7 +94,6 @@ namespace GpsTrackFinder
 			this.buttonWptBrowse = new System.Windows.Forms.Button();
 			this.groupBoxPos = new System.Windows.Forms.GroupBox();
 			this.checkBoxPos = new System.Windows.Forms.CheckBox();
-			this.buttonCorrect = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
 			this.panel1.SuspendLayout();
 			this.panel2.SuspendLayout();
@@ -187,7 +187,7 @@ namespace GpsTrackFinder
 			this.buttonCopyPath.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
 			this.buttonCopyPath.Location = new System.Drawing.Point(0, 316);
 			this.buttonCopyPath.Name = "buttonCopyPath";
-			this.buttonCopyPath.Size = new System.Drawing.Size(123, 23);
+			this.buttonCopyPath.Size = new System.Drawing.Size(128, 23);
 			this.buttonCopyPath.TabIndex = 10;
 			this.buttonCopyPath.Text = "Скопировать имя";
 			this.buttonCopyPath.UseVisualStyleBackColor = true;
@@ -196,7 +196,7 @@ namespace GpsTrackFinder
 			// buttonOpenFolder
 			// 
 			this.buttonOpenFolder.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-			this.buttonOpenFolder.Location = new System.Drawing.Point(129, 316);
+			this.buttonOpenFolder.Location = new System.Drawing.Point(142, 316);
 			this.buttonOpenFolder.Name = "buttonOpenFolder";
 			this.buttonOpenFolder.Size = new System.Drawing.Size(128, 23);
 			this.buttonOpenFolder.TabIndex = 11;
@@ -335,6 +335,7 @@ namespace GpsTrackFinder
 			// 
 			// max_speed
 			// 
+			this.max_speed.DataPropertyName = "max_speed";
 			this.max_speed.HeaderText = "Максимальная скорость";
 			this.max_speed.Name = "max_speed";
 			// 
@@ -356,10 +357,21 @@ namespace GpsTrackFinder
 			this.panel1.Size = new System.Drawing.Size(1098, 339);
 			this.panel1.TabIndex = 16;
 			// 
+			// buttonCorrect
+			// 
+			this.buttonCorrect.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+			this.buttonCorrect.Location = new System.Drawing.Point(422, 316);
+			this.buttonCorrect.Name = "buttonCorrect";
+			this.buttonCorrect.Size = new System.Drawing.Size(128, 23);
+			this.buttonCorrect.TabIndex = 20;
+			this.buttonCorrect.Text = "Исправить..";
+			this.buttonCorrect.UseVisualStyleBackColor = true;
+			this.buttonCorrect.Click += new System.EventHandler(this.buttonCorrect_Click);
+			// 
 			// buttonDelete
 			// 
 			this.buttonDelete.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-			this.buttonDelete.Location = new System.Drawing.Point(263, 316);
+			this.buttonDelete.Location = new System.Drawing.Point(288, 316);
 			this.buttonDelete.Name = "buttonDelete";
 			this.buttonDelete.Size = new System.Drawing.Size(128, 23);
 			this.buttonDelete.TabIndex = 19;
@@ -370,9 +382,9 @@ namespace GpsTrackFinder
 			// buttonCopyToFilder
 			// 
 			this.buttonCopyToFilder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.buttonCopyToFilder.Location = new System.Drawing.Point(594, 316);
+			this.buttonCopyToFilder.Location = new System.Drawing.Point(561, 316);
 			this.buttonCopyToFilder.Name = "buttonCopyToFilder";
-			this.buttonCopyToFilder.Size = new System.Drawing.Size(95, 23);
+			this.buttonCopyToFilder.Size = new System.Drawing.Size(128, 23);
 			this.buttonCopyToFilder.TabIndex = 18;
 			this.buttonCopyToFilder.Text = "Скопировать в:";
 			this.buttonCopyToFilder.UseVisualStyleBackColor = true;
@@ -533,16 +545,6 @@ namespace GpsTrackFinder
 			this.checkBoxPos.TabIndex = 0;
 			this.checkBoxPos.UseVisualStyleBackColor = true;
 			this.checkBoxPos.CheckedChanged += new System.EventHandler(this.checkBoxPos_CheckedChanged);
-			// 
-			// buttonCorrect
-			// 
-			this.buttonCorrect.Location = new System.Drawing.Point(397, 316);
-			this.buttonCorrect.Name = "buttonCorrect";
-			this.buttonCorrect.Size = new System.Drawing.Size(94, 23);
-			this.buttonCorrect.TabIndex = 20;
-			this.buttonCorrect.Text = "Исправить..";
-			this.buttonCorrect.UseVisualStyleBackColor = true;
-			this.buttonCorrect.Click += new System.EventHandler(this.buttonCorrect_Click);
 			// 
 			// MainForm
 			// 

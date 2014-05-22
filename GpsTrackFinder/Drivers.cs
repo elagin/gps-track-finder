@@ -34,6 +34,45 @@ namespace GpsTrackFinder
 {
 	enum State { grad, min, sec, end };
 
+	public class BasePlt
+	{
+
+	}
+
+	public class ParceData
+	{
+		private List<GpsPoint> _points;
+		private List<string> _headers;
+
+		public ParceData()
+		{
+			_points = new List<GpsPoint>();
+			_headers = new List<string>();
+		}
+
+		public void addHeader(string str)
+		{
+			_headers.Add(str);
+		}
+
+		public void addPoint(GpsPoint point)
+		{
+			_points.Add(point);
+		}
+
+		public List<GpsPoint> Points
+		{
+			get { return _points; }
+			set { _points = value; }
+		}
+
+		public List<string> Headers
+		{
+			get { return _headers; }
+			set { _headers = value; }
+		}
+	}
+
 	/// <summary>
 	/// Хранит статистику по файлу.</summary>
 	public class TrackStat
@@ -82,6 +121,8 @@ namespace GpsTrackFinder
 		private double _lat;
 		private double _lon;
 		private DateTime _date;
+		private int _speed;
+		private string _line;
 
 		public GpsPoint(GpsPoint ob)
 		{
@@ -107,6 +148,16 @@ namespace GpsTrackFinder
 			_lon = lon;
 		}
 
+		public GpsPoint(string lat, string lon)
+		{
+			lat = lat.Trim();
+			lon = lon.Trim();
+
+			CultureInfo invC = CultureInfo.InvariantCulture;
+			_lat = Convert.ToDouble(lat, invC);
+			_lon = Convert.ToDouble(lon, invC);
+		}
+
 		public GpsPoint(string lat, string lon, string date)
 		{
 			lat = lat.Trim();
@@ -117,6 +168,22 @@ namespace GpsTrackFinder
 			_lon = Convert.ToDouble(lon, invC);
 			if (date != null && date.Length > 0)
 				_date = ConvertToDate(date);
+		}
+
+
+
+		public GpsPoint(string lat, string lon, string date, string line)
+		{
+			lat = lat.Trim();
+			lon = lon.Trim();
+
+			CultureInfo invC = CultureInfo.InvariantCulture;
+			_lat = Convert.ToDouble(lat, invC);
+			_lon = Convert.ToDouble(lon, invC);
+			if (date != null && date.Length > 0)
+				_date = ConvertToDate(date);
+
+			_line = line;
 		}
 
 		public double Lat
@@ -135,6 +202,18 @@ namespace GpsTrackFinder
 		{
 			get { return _date; }
 			set { _date = value; }
+		}
+
+		public int Speed
+		{
+			get { return _speed; }
+			set { _speed = value; }
+		}
+
+		public string Line
+		{
+			get { return _line; }
+			set { _line = value; }
 		}
 	}
 
@@ -193,7 +272,7 @@ namespace GpsTrackFinder
 						{
 							if (tr.NodeType == XmlNodeType.EndElement && tr.Name == "trkpt")
 							{
-								GpsPoint tmp = new GpsPoint(lat, lon, maxSpeed);
+								GpsPoint tmp = new GpsPoint(lat, lon);
 								if (prevPoint != null)
 								{
 									res.Length += calcDist(prevPoint, tmp);
@@ -249,20 +328,118 @@ namespace GpsTrackFinder
 			return res;
 		}
 
-		private static void WritePlt()
-		{
-			//using (StreamWriter fileOut = new StreamWriter(fileName))
-			//{
-			//}
-		}
-
 		// http://www.realbiker.ru/OziExplorer/fileformats.shtml
 		/// <summary>
-		/// Парсинг PLT-файла.</summary>
-		public static TrackStat ParsePlt(int aDist, string fileName, List<GpsPoint> points, int speedLimit)
+		/// Исправление PLT-файла.</summary>
+		public static void CorrectPlt(string fileName, List<string> data, bool saveBackup)
+		{
+			try
+			{
+				if (saveBackup)
+				{
+					string backupName = fileName.Insert(fileName.LastIndexOf(".plt"), "_backup_");
+					System.IO.File.Move(fileName, backupName);
+				}
+				using (StreamWriter file = new StreamWriter(fileName, false, Encoding.GetEncoding("Windows-1251")))
+				{
+					foreach (string line in data)
+					{
+						file.WriteLine(line);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				string caption = "Произошла ошибка при корректировке файла.";
+				MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		public static TrackStat ParsePlt(int aDist, string fileName, List<GpsPoint> points, ref Settings settings, bool needCorrect)
 		{
 			GpsPoint prevPoint = null;
 			TrackStat res = new TrackStat();
+			List<string> data = new List<string>();
+			CCorrect correct = settings.Correct;
+
+			try
+			{
+				using (StreamReader fileRead = new StreamReader(fileName, Encoding.GetEncoding("Windows-1251")))
+				{
+					bool ApplyFilters = needCorrect && correct.ApplyMaxSpeedFilter && correct.MaxSpeedFilter > 0;
+					double MinDist = double.MaxValue;
+					int lineNumber = 6;
+
+					for (int i = 0; i < 6; i++)		// Пропускаем заголовок
+					{
+						string header = fileRead.ReadLine();
+						//if (speedLimit > 0)
+						if (ApplyFilters)
+							data.Add(header);
+					}
+
+					while (!fileRead.EndOfStream)
+					{
+						string line = fileRead.ReadLine();
+						if (line.Length > 0)
+						{
+							 string[] split = line.Split(',');
+							GpsPoint tmp = new GpsPoint(split[0], split[1], split[4]);
+							if (prevPoint != null)
+							{
+								double dist = calcDist(prevPoint, tmp);
+								res.Length += dist;
+								TimeSpan delta = tmp.Date - prevPoint.Date;
+								if (delta.TotalSeconds > 0) // Почему-то бывает и так
+								{
+									double speed = dist / delta.TotalSeconds * 3.6;
+									if (ApplyFilters && correct.MaxSpeedFilter > speed)
+									{
+										data.Add(line);
+									}
+									if (res.MaxSpeed < speed)
+										res.MaxSpeed = speed;
+								}
+							}
+							else if (ApplyFilters)
+							{
+								data.Add(line);
+							}
+							prevPoint = tmp;
+							res.Points++;
+
+							if (points != null)
+							{
+								foreach (GpsPoint item in points)
+								{
+									double dist = calcDist(item, tmp);
+									if (MinDist > dist)
+										MinDist = dist;
+								}
+							}
+						}
+						lineNumber++;
+					}
+					if (MinDist < double.MaxValue)
+						res.MinDist = MinDist;
+					res.FileName = fileName;
+				}
+				if (data.Count > 0)
+					CorrectPlt(fileName, data, correct.SaveBackup);
+			}
+			catch (Exception ex)
+			{
+				string caption = "Произошла ошибка при работе с файлом.";
+				MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			return res;
+		}
+
+		public static TrackStat ParsePltOld2(int aDist, string fileName, List<GpsPoint> points, int speedLimit)
+		{
+			GpsPoint prevPoint = null;
+			TrackStat res = new TrackStat();
+
 			StreamWriter fileOut = null;
 			try
 			{
@@ -287,10 +464,6 @@ namespace GpsTrackFinder
 
 					while (!fileRead.EndOfStream)
 					{
-						if (lineNumber == 1302)
-						{
-							;
-						}
 						string line = fileRead.ReadLine();
 						if (line.Length > 0)
 						{
@@ -361,6 +534,154 @@ namespace GpsTrackFinder
 			return res;
 		}
 
+		public static TrackStat procFind(int aDist, string fileName, ParceData data, int speedLimit)
+		{
+			GpsPoint prevPoint = null;
+			TrackStat res = new TrackStat();
+			foreach (GpsPoint tmp in data.Points)
+			{
+				// zz
+				/*
+								double MinDist = double.MaxValue;
+								if (prevPoint != null)
+								{
+									double dist = calcDist(prevPoint, tmp);
+									res.Length += dist;
+									TimeSpan delta = tmp.Date - prevPoint.Date;
+									if (delta.TotalSeconds > 0) // Почему-то бывает и так
+									{
+										double speed = dist / delta.TotalSeconds * 3.6;
+										if (res.MaxSpeed < speed)
+											res.MaxSpeed = speed;
+									}
+								}
+								prevPoint = tmp;
+				 */
+				res.Points++;
+				/*
+				foreach (GpsPoint item in data.Points)
+				{
+					double dist = calcDist(item, tmp);
+					if (MinDist > dist)
+						MinDist = dist;
+				}
+
+				if (MinDist < double.MaxValue)
+					res.MinDist = MinDist;
+				 * */
+				res.FileName = fileName;
+			}
+			return res;
+		}
+
+
+		// http://www.realbiker.ru/OziExplorer/fileformats.shtml
+		/// <summary>
+		/// Парсинг PLT-файла.</summary>
+		public static ParceData ParsePlt(int aDist, string fileName)
+		{
+			GpsPoint prevPoint = null;
+			ParceData res = new ParceData();
+
+			// zz
+			//			StreamWriter fileOut = null;
+			try
+			{
+				using (StreamReader fileRead = new StreamReader(fileName, Encoding.GetEncoding("Windows-1251")))
+				{
+					// zz
+					/*
+					if (speedLimit > 0)
+					{
+						string newName = fileName.Insert(fileName.LastIndexOf(".plt"), "_new_");
+						fileOut = new StreamWriter(newName, false, Encoding.GetEncoding("Windows-1251"));
+						fileOut.AutoFlush = true;
+					}
+					*/
+					double MinDist = double.MaxValue;
+
+					int lineNumber = 6;
+					for (int i = 0; i < 6; i++)		// Пропускаем заголовок
+					{
+						res.addHeader(fileRead.ReadLine());
+					}
+
+					while (!fileRead.EndOfStream)
+					{
+						string line = fileRead.ReadLine();
+						if (line.Length > 0)
+						{
+							try
+							{
+								string[] split = line.Split(',');
+								GpsPoint tmp = new GpsPoint(split[0], split[1], split[4], line);
+								res.addPoint(tmp);
+								if (prevPoint != null)
+								{
+									double dist = calcDist(prevPoint, tmp);
+									//res.Length += dist;
+									TimeSpan delta = tmp.Date - prevPoint.Date;
+									if (delta.TotalSeconds > 0) // Почему-то бывает и так
+									{
+										double speed = dist / delta.TotalSeconds * 3.6;
+										// zz
+										/*
+										if (fileOut != null && speedLimit > speed)
+										{
+											fileOut.WriteLine(line);
+										}
+										if (speedLimit <= speed)
+										{
+											string caption = "Превышенна скорость..";
+											MessageBox.Show(fileName + "\r\n" + "в строке: " + Convert.ToString(lineNumber) + "\r\n" + line, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+										}
+										
+										if (res.MaxSpeed < speed)
+											res.MaxSpeed = speed;
+										 * */
+									}
+								}
+								/*
+																else if (fileOut != null)
+																{
+																	fileOut.WriteLine(line);
+																}*/
+								prevPoint = tmp;
+								/*
+																res.Points++;
+
+																foreach (GpsPoint item in points)
+																{
+																	double dist = calcDist(item, tmp);
+																	if (MinDist > dist)
+																		MinDist = dist;
+																}
+								*/
+							}
+							catch (Exception ex)
+							{
+								string caption = "Произошла ошибка при работе с файлом.";
+								var result = MessageBox.Show(fileName + "\r\n" + "в строке: " + Convert.ToString(lineNumber) + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+							}
+						}
+						lineNumber++;
+					}
+					// zz
+					/*
+					if (MinDist < double.MaxValue)
+						res.MinDist = MinDist;
+					res.FileName = fileName;
+					 */
+				}
+			}
+			catch (Exception ex)
+			{
+				string caption = "Произошла ошибка при работе с файлом.";
+				MessageBox.Show(fileName + "\r\n" + ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			return res;
+		}
+
 		/// <summary>
 		/// Парсинг WPT-файла.</summary>
 		public static void ParseWpt(string fileName, ref List<GpsPoint> res)
@@ -384,7 +705,7 @@ namespace GpsTrackFinder
 								try
 								{
 									string[] split = line.Split(',');
-									GpsPoint tmp = new GpsPoint(split[2], split[3], "");
+									GpsPoint tmp = new GpsPoint(split[2], split[3]);
 									res.Add(tmp);
 								}
 								catch (Exception ex)

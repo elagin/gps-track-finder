@@ -60,6 +60,34 @@ public class SettingsGpsPoint
 	}
 }
 
+public class CCorrect
+{
+	private bool _applyMaxSpeedFilter;
+	private int _maxSpeedFilter;
+	private bool _saveBackup;
+
+	public CCorrect()
+	{ }
+
+	public bool ApplyMaxSpeedFilter
+	{
+		get { return _applyMaxSpeedFilter; }
+		set { _applyMaxSpeedFilter = value; }
+	}
+
+	public int MaxSpeedFilter
+	{
+		get { return _maxSpeedFilter; }
+		set { _maxSpeedFilter = value; }
+	}
+
+	public bool SaveBackup
+	{
+		get { return _saveBackup; }
+		set { _saveBackup = value; }
+	}
+}
+
 public class Settings
 {
 	private string _filename;
@@ -71,6 +99,13 @@ public class Settings
 	private bool _searchSubFolder;
 	private bool _searchByPos;
 	private bool _searchByWpt;
+	private CCorrect _correct;
+
+	public CCorrect Correct
+	{
+		get { return _correct; }
+		set { _correct = value; }
+	}
 
 	public SettingsGpsPoint CentralPoint
 	{
@@ -122,6 +157,7 @@ public class Settings
 
 	public Settings()
 	{
+		;
 	}
 
 	public Settings(string fileName)
@@ -208,6 +244,10 @@ public class Settings
 		this._сopyToFilder = "";
 		this._centralPoint = new SettingsGpsPoint("1", "1");
 		this._dist = 20;
+		this.Correct = new CCorrect();
+		this.Correct.MaxSpeedFilter = 120;
+		this.Correct.SaveBackup = true;
+		this.Correct.ApplyMaxSpeedFilter = false;
 	}
 
 	private void CopyFrom(Settings Obj)
@@ -225,6 +265,14 @@ public class Settings
 		this.SearchSubFolder = Obj.SearchSubFolder;
 		this.SearchByPos = Obj.SearchByPos;
 		this._searchByWpt = Obj._searchByWpt;
+
+		if (Obj.Correct != null)
+		{
+			this.Correct = Obj.Correct;
+			this.Correct.MaxSpeedFilter = Obj.Correct.MaxSpeedFilter;
+			this.Correct.SaveBackup = Obj.Correct.SaveBackup;
+			this.Correct.ApplyMaxSpeedFilter = Obj.Correct.ApplyMaxSpeedFilter;
+		}
 	}
 }
 

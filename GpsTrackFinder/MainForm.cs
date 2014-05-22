@@ -137,7 +137,7 @@ namespace GpsTrackFinder
 			checkBox.CheckedChanged += new EventHandler(checkBox_CheckedChanged);
 			checkBox.Size = new Size(18, 18);
 
-			if(settings.SearchSubFolder)
+			if (settings.SearchSubFolder)
 				checkBoxWithSubFilder.CheckState = CheckState.Checked;
 
 			checkBoxPos.Checked = settings.SearchByPos;
@@ -320,6 +320,7 @@ namespace GpsTrackFinder
 			buttonCopyPath.Enabled = count > 0;
 			buttonOpenFolder.Enabled = count > 0;
 			buttonDelete.Enabled = count > 0;
+			buttonCorrect.Enabled = count > 0;
 			buttonCopyToFilder.Enabled = (settings.CopyToFilder.Length > 0 && count > 0);
 			labelFoundInfo.Text = String.Format("Найдено/выбрано: {0}/{1}", _tracksFound, count);
 
@@ -331,7 +332,6 @@ namespace GpsTrackFinder
 			textBoxWptFile.Enabled = checkBoxWpt.Checked;
 			buttonWptBrowse.Enabled = checkBoxWpt.Checked;
 			buttonStart.Enabled = (checkBoxWpt.Checked || checkBoxPos.Checked);
-			// ---
 		}
 
 		private void textBoxFindFolder_TextChanged(object sender, EventArgs e)
@@ -435,16 +435,16 @@ namespace GpsTrackFinder
 				foreach (var file in files)
 				{
 					TrackStat stat = new TrackStat();
+					ParceData data = new ParceData();
 
-					if(file.Extension == ".plt")
-						stat = Drivers.ParsePlt(settings.Distaice, file.FullName, points, 80);
-					else if(file.Extension == ".gpx")
+					if (file.Extension == ".plt")
+						stat = Drivers.ParsePlt(settings.Distaice, file.FullName, points, ref settings, false);
+					else if (file.Extension == ".gpx")
 						stat = Drivers.ParseGpx(settings.Distaice, file.FullName, points);
 
 					if (settings.Distaice * 1000 > (int)stat.MinDist)
 					{
 						WorkState state = new WorkState();
-
 						object[] arr = new object[7];
 						arr[0] = false;
 						arr[1] = stat.FileName;
@@ -456,7 +456,9 @@ namespace GpsTrackFinder
 
 						state.arr = arr;
 						state.path = path;
+
 						bgw.ReportProgress(0, state);  // Обновляем информацию о результатах работы.
+
 					}
 				}
 				if (searchSubFolder)
@@ -622,20 +624,27 @@ namespace GpsTrackFinder
 		private void buttonCorrect_Click(object sender, EventArgs e)
 		{
 			//Открываем диалог с параметрами (макс скорость, перезаписывать, копировать в папку, переименовывать и т.д.)
-			//затем обходим треки
-			try
+			//затем обходим указанные треки
+			//using (CorrectForm download = new CorrectForm(settings.Correct.MaxSpeedFilter, settings.Correct.NoSaveBackup))
+			using (CorrectForm download = new CorrectForm(ref settings))
 			{
-				StringBuilder buff = new StringBuilder();
-				List<string> fileNames = getSelectedFilenames();
-				foreach (string item in fileNames)
-					buff.Append(item + Environment.NewLine);
-				//if (buff.Length > 0)
-					//Clipboard.SetData(DataFormats.Text, (Object)buff.ToString());
-			}
-			catch (Exception ex)
-			{
-				string caption = "Произошла ошибка при исправлении трека";
-				var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+				DialogResult resDlg = download.ShowDialog();
+				if (resDlg == DialogResult.OK)
+				{
+					try
+					{
+						List<string> fileNames = getSelectedFilenames();
+						foreach (string item in fileNames)
+						{
+							Drivers.ParsePlt(0, item, null, ref settings, true);
+						}
+					}
+					catch (Exception ex)
+					{
+						string caption = "Произошла ошибка при исправлении трека";
+						var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
+				}
 			}
 		}
 	}
