@@ -76,11 +76,11 @@ namespace GpsTrackFinder
 		{
 			dt.Columns.Add("id", typeof(bool));
 			dt.Columns.Add("filename", typeof(string));
-			dt.Columns.Add("distance", typeof(int));
-			dt.Columns.Add("length", typeof(int));
+			dt.Columns.Add("distance", typeof(double));
+			dt.Columns.Add("length", typeof(double));
 			dt.Columns.Add("points", typeof(int));
 			dt.Columns.Add("points_p_m", typeof(double));
-			dt.Columns.Add("max_speed", typeof(double));
+			dt.Columns.Add("max_speed", typeof(int));
 		}
 
 		/// <summary>
@@ -98,8 +98,17 @@ namespace GpsTrackFinder
 			comboBoxLon.Items.Add(new ComboItem("E", 0));
 			comboBoxLon.Items.Add(new ComboItem("W", 1));
 
-			_internalDegres.Lat = Drivers.getDeg(settings.CentralPoint.Lat);
-			_internalDegres.Lon = Drivers.getDeg(settings.CentralPoint.Lon);
+			try
+			{
+				_internalDegres.Lat = Drivers.getDeg(settings.CentralPoint.Lat);
+				_internalDegres.Lon = Drivers.getDeg(settings.CentralPoint.Lon);
+			}
+			catch(Exception ex)
+			{
+				string msg = ex.Message;
+				string caption = "Ошибка";
+				MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 
 			// Есть минус, ставим букву и минус выкидываем
 			if (settings.CentralPoint.Lat[0] == '-')
@@ -146,7 +155,7 @@ namespace GpsTrackFinder
 
 		/// <summary>
 		/// Сохраняет состояния элементов UI.</summary>
-		private void SaveCtrls()
+		private bool SaveCtrls(bool isShowError)
 		{
 			CultureInfo invC = CultureInfo.InvariantCulture;
 
@@ -162,20 +171,59 @@ namespace GpsTrackFinder
 				else
 					settings.CentralPoint.Lon = "-" + textBoxLon.Text;
 
-				_internalDegres.Lat = Drivers.getDeg(settings.CentralPoint.Lat);
-				_internalDegres.Lon = Drivers.getDeg(settings.CentralPoint.Lon);
-
+				try
+				{
+					_internalDegres.Lat = Drivers.getDeg(settings.CentralPoint.Lat);
+					_internalDegres.Lon = Drivers.getDeg(settings.CentralPoint.Lon);
+				}
+				catch(Exception ex)
+				{
+					if (isShowError)
+					{
+						string msg = ex.Message;
+						string caption = "Ошибка";
+						MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
+					return false;
+				}
 			}
 			settings.SearchFolder = textBoxFindFolder.Text;
 
 			if (textBoxDistance.Text.Length > 0)
-				settings.Distaice = Convert.ToInt32(textBoxDistance.Text, invC);
+			{
+				try
+				{
+					settings.Distaice = Convert.ToInt32(textBoxDistance.Text, invC);
+				}
+				catch (FormatException)
+				{
+					if (isShowError)
+					{
+						string msg = "Неверный формат числа в поле дистанция, допускаются только целое число.";
+						string caption = "Ошибка";
+						MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
+					return false;
+				}
+				catch (OverflowException)
+				{
+					if (isShowError)
+					{
+						string msg = "Эта версия приложения предназначена для использования на планете Земля.\r\nПожалуйста, уменьшите дистанцию для поиска.";
+						string caption = "Ошибка";
+						MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
+					return false;
+				}
+			}
 
 			settings.CopyToFilder = textBoxCopyToFilder.Text;
 			settings.WptFileName = textBoxWptFile.Text;
 			settings.SearchSubFolder = checkBoxWithSubFilder.Checked;
 			settings.SearchByPos = checkBoxPos.Checked;
 			settings.SearchByWpt = checkBoxWpt.Checked;
+
+			return true;
 		}
 
 		/// <summary>
@@ -184,15 +232,17 @@ namespace GpsTrackFinder
 		{
 			if (!bgw.IsBusy)
 			{
-				SaveCtrls();
-				dt.Clear();
+				if (SaveCtrls(true))
+				{
+					dt.Clear();
 
-				bgw.RunWorkerAsync();
-				buttonStart.Text = "Стоп";
-				checkBox.Checked = false;
-				_tracksFound = 0;
-				dataGridView1.DataSource = dt;
-				dataGridView1.Sort(dataGridView1.Columns[_sortColunm], ListSortDirection.Ascending);
+					bgw.RunWorkerAsync();
+					buttonStart.Text = "Стоп";
+					checkBox.Checked = false;
+					_tracksFound = 0;
+					dataGridView1.DataSource = dt;
+					dataGridView1.Sort(dataGridView1.Columns[_sortColunm], ListSortDirection.Ascending);
+				}
 			}
 			else
 				bgw.CancelAsync();
@@ -230,7 +280,6 @@ namespace GpsTrackFinder
 				return "";
 		}
 
-
 		/// <summary>
 		/// Обработка нажатия кнопки смены папки поиска.</summary>
 		private void buttonBrowse_Click(object sender, EventArgs e)
@@ -247,8 +296,8 @@ namespace GpsTrackFinder
 		/// Подготовка к закрытию формы.</summary>
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			SaveCtrls();
-			settings.save();
+			if(SaveCtrls(false))
+				settings.save();
 		}
 
 		/// <summary>
@@ -331,7 +380,7 @@ namespace GpsTrackFinder
 			textBoxLon.Enabled = checkBoxPos.Checked;
 			textBoxWptFile.Enabled = checkBoxWpt.Checked;
 			buttonWptBrowse.Enabled = checkBoxWpt.Checked;
-			buttonStart.Enabled = (checkBoxWpt.Checked || checkBoxPos.Checked);
+			buttonStart.Enabled = ((checkBoxWpt.Checked || checkBoxPos.Checked ) && (textBoxLat.Text.Length > 0 && textBoxLon.Text.Length > 0));
 		}
 
 		private void textBoxFindFolder_TextChanged(object sender, EventArgs e)
@@ -448,8 +497,8 @@ namespace GpsTrackFinder
 						object[] arr = new object[7];
 						arr[0] = false;
 						arr[1] = stat.FileName;
-						arr[2] = (int)stat.MinDist;
-						arr[3] = (int)stat.Length;
+						arr[2] = stat.MinDist / 1000;
+						arr[3] = stat.Length / 1000;
 						arr[4] = stat.Points;
 						arr[5] = stat.Points / (stat.Length / 1000);
 						arr[6] = stat.MaxSpeed;
