@@ -42,7 +42,7 @@ namespace GpsTrackFinder
 
 		private GpsPoint _internalDegres = new GpsPoint();
 
-		private System.ComponentModel.BackgroundWorker bgw = new BackgroundWorker();
+		private BackgroundWorker bgw = new BackgroundWorker();
 		private Stopwatch sWatch = new Stopwatch();
 
 		/// <summary>
@@ -103,7 +103,7 @@ namespace GpsTrackFinder
 				_internalDegres.Lat = Drivers.getDeg(settings.CentralPoint.Lat);
 				_internalDegres.Lon = Drivers.getDeg(settings.CentralPoint.Lon);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				string msg = ex.Message;
 				string caption = "Ошибка";
@@ -176,7 +176,7 @@ namespace GpsTrackFinder
 					_internalDegres.Lat = Drivers.getDeg(settings.CentralPoint.Lat);
 					_internalDegres.Lon = Drivers.getDeg(settings.CentralPoint.Lon);
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					if (isShowError)
 					{
@@ -222,7 +222,6 @@ namespace GpsTrackFinder
 			settings.SearchSubFolder = checkBoxWithSubFilder.Checked;
 			settings.SearchByPos = checkBoxPos.Checked;
 			settings.SearchByWpt = checkBoxWpt.Checked;
-
 			return true;
 		}
 
@@ -267,7 +266,6 @@ namespace GpsTrackFinder
 		private string getFileName()
 		{
 			OpenFileDialog dlg = new OpenFileDialog();
-
 			dlg.InitialDirectory = textBoxFindFolder.Text;
 			dlg.Filter = "Все (*.*)|*.*|wpt (*.wpt)|*.wpt";
 			dlg.FilterIndex = 2;
@@ -296,7 +294,7 @@ namespace GpsTrackFinder
 		/// Подготовка к закрытию формы.</summary>
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			if(SaveCtrls(false))
+			if (SaveCtrls(false))
 				settings.save();
 		}
 
@@ -380,7 +378,7 @@ namespace GpsTrackFinder
 			textBoxLon.Enabled = checkBoxPos.Checked;
 			textBoxWptFile.Enabled = checkBoxWpt.Checked;
 			buttonWptBrowse.Enabled = checkBoxWpt.Checked;
-			buttonStart.Enabled = ((checkBoxWpt.Checked || checkBoxPos.Checked ) && (textBoxLat.Text.Length > 0 && textBoxLon.Text.Length > 0));
+			buttonStart.Enabled = ((checkBoxWpt.Checked || checkBoxPos.Checked) && (textBoxLat.Text.Length > 0 && textBoxLon.Text.Length > 0));
 		}
 
 		private void textBoxFindFolder_TextChanged(object sender, EventArgs e)
@@ -484,7 +482,6 @@ namespace GpsTrackFinder
 				foreach (var file in files)
 				{
 					TrackStat stat = new TrackStat();
-					ParceData data = new ParceData();
 
 					if (file.Extension == ".plt")
 						stat = Drivers.ParsePlt(settings.Distaice, file.FullName, points, ref settings, false);
@@ -674,10 +671,9 @@ namespace GpsTrackFinder
 		{
 			//Открываем диалог с параметрами (макс скорость, перезаписывать, копировать в папку, переименовывать и т.д.)
 			//затем обходим указанные треки
-			//using (CorrectForm download = new CorrectForm(settings.Correct.MaxSpeedFilter, settings.Correct.NoSaveBackup))
-			using (CorrectForm download = new CorrectForm(ref settings))
+			using (CorrectForm correctForm = new CorrectForm(ref settings))
 			{
-				DialogResult resDlg = download.ShowDialog();
+				DialogResult resDlg = correctForm.ShowDialog();
 				if (resDlg == DialogResult.OK)
 				{
 					try

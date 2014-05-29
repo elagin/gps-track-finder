@@ -62,12 +62,21 @@ public class SettingsGpsPoint
 
 public class CCorrect
 {
+	private bool _applyFilters;
 	private bool _applyMaxSpeedFilter;
 	private int _maxSpeedFilter;
 	private bool _saveBackup;
+	private bool _applyDivideBy;
+	private int _divideBy;
 
 	public CCorrect()
 	{ }
+
+	public bool ApplyFilters
+	{
+		get { return _applyFilters; }
+		set { _applyFilters = value; }
+	}
 
 	public bool ApplyMaxSpeedFilter
 	{
@@ -85,6 +94,18 @@ public class CCorrect
 	{
 		get { return _saveBackup; }
 		set { _saveBackup = value; }
+	}
+
+	public bool ApplyDivideBy
+	{
+		get { return _applyDivideBy; }
+		set { _applyDivideBy = value; }
+	}
+
+	public int DivideBy
+	{
+		get { return _divideBy; }
+		set { _divideBy = value; }
 	}
 }
 
@@ -247,7 +268,10 @@ public class Settings
 		this.Correct = new CCorrect();
 		this.Correct.MaxSpeedFilter = 120;
 		this.Correct.SaveBackup = true;
+		this.Correct.ApplyFilters = false;
 		this.Correct.ApplyMaxSpeedFilter = false;
+		this.Correct.ApplyDivideBy = false;
+		this.Correct.DivideBy = 0;
 	}
 
 	private void CopyFrom(Settings Obj)
@@ -272,6 +296,9 @@ public class Settings
 			this.Correct.MaxSpeedFilter = Obj.Correct.MaxSpeedFilter;
 			this.Correct.SaveBackup = Obj.Correct.SaveBackup;
 			this.Correct.ApplyMaxSpeedFilter = Obj.Correct.ApplyMaxSpeedFilter;
+			this.Correct.ApplyFilters = Obj.Correct.ApplyFilters;
+			this.Correct.ApplyDivideBy = Obj.Correct.ApplyDivideBy;
+			this.Correct.DivideBy = Obj.Correct.DivideBy;
 		}
 	}
 }

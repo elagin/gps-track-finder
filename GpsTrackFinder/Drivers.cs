@@ -33,16 +33,27 @@ using System.Xml;
 namespace GpsTrackFinder
 {
 	enum State { grad, min, sec, end };
+	enum CorrectMode { none, maxSpeed, divideByDay, divideByMonth, divideBySegment };
 
-	public class ParceData
+	public class ParcedData
 	{
-		private List<GpsPoint> _points;
+		private List<string> _points;
 		private List<string> _headers;
 
-		public ParceData()
+		public ParcedData()
 		{
-			_points = new List<GpsPoint>();
+			_points = new List<string>();
 			_headers = new List<string>();
+		}
+
+		public void Clear()
+		{
+			_points.Clear();
+		}
+
+		public int Count()
+		{
+			return _points.Count;
 		}
 
 		public void addHeader(string str)
@@ -50,12 +61,12 @@ namespace GpsTrackFinder
 			_headers.Add(str);
 		}
 
-		public void addPoint(GpsPoint point)
+		public void addPoint(string point)
 		{
 			_points.Add(point);
 		}
 
-		public List<GpsPoint> Points
+		public List<string> Points
 		{
 			get { return _points; }
 			set { _points = value; }
@@ -139,9 +150,7 @@ namespace GpsTrackFinder
 			return DateTime.FromOADate(time);
 		}
 
-		public GpsPoint()
-		{
-		}
+		public GpsPoint() { }
 
 		public GpsPoint(double lat, double lon)
 		{
@@ -170,8 +179,6 @@ namespace GpsTrackFinder
 			if (date != null && date.Length > 0)
 				_date = ConvertToDate(date);
 		}
-
-
 
 		public GpsPoint(string lat, string lon, string date, string line)
 		{
@@ -220,11 +227,16 @@ namespace GpsTrackFinder
 
 	class Drivers
 	{
+		private static int fileSegment = 0;
+
 		/// <summary>
 		/// Расчет расстояния (в метрах) между двумя географическими координатами.</summary>
 		// http://gis-lab.info/qa/great-circles.html
 		public static double calcDist(GpsPoint first, GpsPoint second)
 		{
+			// Иначе расстояние будет 30 000 км.
+			if (first.Lon == second.Lon && first.Lat == second.Lat)
+				return 0;
 			//rad - радиус сферы (Земли)
 			int rad = 6372795;
 			//в радианах
@@ -332,18 +344,37 @@ namespace GpsTrackFinder
 		// http://www.realbiker.ru/OziExplorer/fileformats.shtml
 		/// <summary>
 		/// Исправление PLT-файла.</summary>
-		public static void CorrectPlt(string fileName, List<string> data, bool saveBackup)
+		public static void CorrectPlt(string fileName, ParcedData data, bool saveBackup, CorrectMode mode, DateTime lastDate)
 		{
 			try
 			{
-				if (saveBackup)
+				if (mode == CorrectMode.maxSpeed && saveBackup)
 				{
 					string backupName = fileName.Insert(fileName.LastIndexOf(".plt"), "_backup_");
 					System.IO.File.Move(fileName, backupName);
 				}
+				else if (mode == CorrectMode.divideByMonth)
+				{
+					fileName = fileName.Insert(fileName.LastIndexOf(".plt"), lastDate.ToString("-yyyy-MM"));
+				}
+				else if (mode == CorrectMode.divideByDay)
+				{
+					fileName = fileName.Insert(fileName.LastIndexOf(".plt"), lastDate.ToString("-yyyy-MM-dd"));
+				}
+				else if (mode == CorrectMode.divideBySegment)
+				{
+					fileName = fileName.Insert(fileName.LastIndexOf(".plt"), lastDate.ToString("-yyyy-MM-dd-") + fileSegment.ToString());
+					fileSegment++;
+				}
+
 				using (StreamWriter file = new StreamWriter(fileName, false, Encoding.GetEncoding("Windows-1251")))
 				{
-					foreach (string line in data)
+					foreach (string line in data.Headers)
+					{
+						file.WriteLine(line);
+					}
+
+					foreach (string line in data.Points)
 					{
 						file.WriteLine(line);
 					}
@@ -361,25 +392,47 @@ namespace GpsTrackFinder
 		/// Парсинг PLT-файла.</summary>
 		public static TrackStat ParsePlt(int aDist, string fileName, List<GpsPoint> points, ref Settings settings, bool needCorrect)
 		{
-			GpsPoint prevPoint = null;
+			GpsPoint prevPos = null;
 			TrackStat res = new TrackStat();
-			List<string> data = new List<string>();
 			CCorrect correct = settings.Correct;
+			CorrectMode mode = new CorrectMode();
+			ParcedData parcedData = new ParcedData();
 
 			try
 			{
 				using (StreamReader fileRead = new StreamReader(fileName, Encoding.GetEncoding("Windows-1251")))
 				{
-					bool ApplyFilters = needCorrect && correct.ApplyMaxSpeedFilter && correct.MaxSpeedFilter > 0;
+					if (needCorrect)
+					{
+						fileSegment = 0;
+						if (correct.ApplyFilters && correct.ApplyMaxSpeedFilter && correct.MaxSpeedFilter > 0)
+						{
+							mode = CorrectMode.maxSpeed;
+						}
+						else if (settings.Correct.ApplyDivideBy)
+						{
+							switch (settings.Correct.DivideBy)
+							{
+								case 0:
+									mode = CorrectMode.divideByMonth;
+									break;
+								case 1:
+									mode = CorrectMode.divideByDay;
+									break;
+								case 2:
+									mode = CorrectMode.divideBySegment;
+									break;
+							}
+						}
+					}
 					double MinDist = double.MaxValue;
 					int lineNumber = 6;
 
 					for (int i = 0; i < 6; i++)		// Пропускаем заголовок
 					{
 						string header = fileRead.ReadLine();
-						//if (speedLimit > 0)
-						if (ApplyFilters)
-							data.Add(header);
+						if (mode != CorrectMode.none)
+							parcedData.addHeader(header);
 					}
 
 					while (!fileRead.EndOfStream)
@@ -388,35 +441,66 @@ namespace GpsTrackFinder
 						if (line.Length > 0)
 						{
 							string[] split = line.Split(',');
-							GpsPoint tmp = new GpsPoint(split[0], split[1], split[4]);
-							if (prevPoint != null)
+							GpsPoint currentPos = new GpsPoint(split[0], split[1], split[4]);
+
+							// Начало нового сегмента
+							if (split[2] == "1")
 							{
-								double dist = calcDist(prevPoint, tmp);
+								if (needCorrect && prevPos != null)
+								{
+									if (mode == CorrectMode.divideByMonth && prevPos.Date.Month != currentPos.Date.Month)
+									{
+										CorrectPlt(fileName, parcedData, correct.SaveBackup, mode, prevPos.Date);
+										parcedData.Clear();
+									}
+									else if (mode == CorrectMode.divideByDay && prevPos.Date.Day != currentPos.Date.Day)
+									{
+										CorrectPlt(fileName, parcedData, correct.SaveBackup, mode, prevPos.Date);
+										parcedData.Clear();
+									}
+									else if (mode == CorrectMode.divideBySegment)
+									{
+										CorrectPlt(fileName, parcedData, correct.SaveBackup, mode, prevPos.Date);
+										parcedData.Clear();
+									}
+								}
+								else
+								{
+									prevPos = null;
+								}
+							}
+
+							if (prevPos != null)
+							{
+								double dist = calcDist(prevPos, currentPos);
 								res.Length += dist;
-								TimeSpan delta = tmp.Date - prevPoint.Date;
+								TimeSpan delta = currentPos.Date - prevPos.Date;
 								if (delta.TotalSeconds > 0) // Почему-то бывает и так
 								{
 									double speed = dist / delta.TotalSeconds * 3.6;
-									if (ApplyFilters && correct.MaxSpeedFilter > speed)
+									if ((mode == CorrectMode.maxSpeed && correct.MaxSpeedFilter > speed) ||
+										(mode == CorrectMode.divideByMonth) ||
+										(mode == CorrectMode.divideByDay) ||
+										mode == CorrectMode.divideBySegment)
 									{
-										data.Add(line);
+										parcedData.addPoint(line);
 									}
 									if (res.MaxSpeed < speed)
 										res.MaxSpeed = speed;
 								}
 							}
-							else if (ApplyFilters)
+							else if (mode != CorrectMode.none)
 							{
-								data.Add(line);
+								parcedData.addPoint(line);
 							}
-							prevPoint = tmp;
+							prevPos = currentPos;
 							res.Points++;
 
 							if (points != null)
 							{
 								foreach (GpsPoint item in points)
 								{
-									double dist = calcDist(item, tmp);
+									double dist = calcDist(item, currentPos);
 									if (MinDist > dist)
 										MinDist = dist;
 								}
@@ -428,8 +512,8 @@ namespace GpsTrackFinder
 						res.MinDist = MinDist;
 					res.FileName = fileName;
 				}
-				if (data.Count > 0)
-					CorrectPlt(fileName, data, correct.SaveBackup);
+				if (parcedData.Count() > 0)
+					CorrectPlt(fileName, parcedData, correct.SaveBackup, mode, prevPos.Date);
 			}
 			catch (Exception ex)
 			{
@@ -497,7 +581,7 @@ namespace GpsTrackFinder
 				string tmp = "";
 				int tmpSize = 0;
 				int mul = 1;
-				Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator[0];
+				Char separator = CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator[0];
 
 				if (value[0] == '-')
 				{
@@ -561,8 +645,6 @@ namespace GpsTrackFinder
 			{
 				String logStr = "Произошла ошибка при преобразовании координаты: " + value + ". Пожалуйста, проверьте формат.";
 				throw new Exception(logStr);
-//				string caption = "Произошла ошибка при преобразовании координаты: " + value + ". Пожалуйста, проверьте формат.";
-//				var result = MessageBox.Show(ex.Message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 	}
