@@ -33,12 +33,86 @@ using System.Xml;
 namespace GpsTrackFinder
 {
 	enum State { grad, min, sec, end };
-	enum CorrectMode { none, maxSpeed, divideByDay, divideByMonth, divideBySegment };
+	enum CorrectMode { none, maxSpeed, divideByDay, divideByMonth, divideBySegment, regularizeByTime };
 
-	public class ParcedData
+	/// <summary>
+	/// Базовый класс для хранения строк трека.<summary>
+	abstract class ParseBase
+	{
+
+		/// <summary>
+		/// Список для хранения заголовка трека.<summary>
+		protected List<string> _headers;
+
+		public abstract void Clear();
+		public abstract int Count();
+		public abstract void addPoint(string point);
+		public abstract List<string> getPoints();
+
+		public List<string> Headers
+		{
+			get { return _headers; }
+			set { _headers = value; }
+		}
+
+		public void addHeader(string str)
+		{
+			_headers.Add(str);
+		}
+	}
+
+	/// <summary>
+	/// Класс для хранения строк трека сортированными по времени.<summary>
+	class ParcedDataSortable : ParseBase
+	{
+		private SortedDictionary<DateTime, string> _points;
+
+		public ParcedDataSortable()
+		{
+			_headers = new List<string>();
+			_points = new SortedDictionary<DateTime, string>();
+		}
+
+		public override void Clear()
+		{
+			_points.Clear();
+		}
+
+		public override int Count()
+		{
+			return _points.Count;
+		}
+
+		public override void addPoint(string point)
+		{
+			string[] split = point.Split(',');
+			DateTime date = Drivers.ConvertToDate(split[4]);
+			try
+			{
+				_points.Add(date, point);
+			}
+			catch (ArgumentException)
+			{
+				//Элемент уже присутствует, откидываем.
+			}
+		}
+
+		public override List<string> getPoints()
+		{
+			List<string> res = new List<string>();
+			foreach (KeyValuePair<DateTime, string> pair in _points)
+			{
+				res.Add(pair.Value);
+			}
+			return res;
+		}
+	}
+
+	/// <summary>
+	/// Класс для хранения строк трека.<summary>
+	class ParcedData : ParseBase
 	{
 		private List<string> _points;
-		private List<string> _headers;
 
 		public ParcedData()
 		{
@@ -46,36 +120,24 @@ namespace GpsTrackFinder
 			_headers = new List<string>();
 		}
 
-		public void Clear()
+		public override void Clear()
 		{
 			_points.Clear();
 		}
 
-		public int Count()
+		public override int Count()
 		{
 			return _points.Count;
 		}
 
-		public void addHeader(string str)
-		{
-			_headers.Add(str);
-		}
-
-		public void addPoint(string point)
+		public override void addPoint(string point)
 		{
 			_points.Add(point);
 		}
 
-		public List<string> Points
+		public override List<string> getPoints()
 		{
-			get { return _points; }
-			set { _points = value; }
-		}
-
-		public List<string> Headers
-		{
-			get { return _headers; }
-			set { _headers = value; }
+			return _points;
 		}
 	}
 
@@ -143,13 +205,6 @@ namespace GpsTrackFinder
 			this._date = ob._date;
 		}
 
-		private DateTime ConvertToDate(string date)
-		{
-			date = date.Replace(".", ",");
-			double time = Convert.ToDouble(date);
-			return DateTime.FromOADate(time);
-		}
-
 		public GpsPoint() { }
 
 		public GpsPoint(double lat, double lon)
@@ -177,7 +232,7 @@ namespace GpsTrackFinder
 			_lat = Convert.ToDouble(lat, invC);
 			_lon = Convert.ToDouble(lon, invC);
 			if (date != null && date.Length > 0)
-				_date = ConvertToDate(date);
+				_date = Drivers.ConvertToDate(date);
 		}
 
 		public GpsPoint(string lat, string lon, string date, string line)
@@ -189,7 +244,7 @@ namespace GpsTrackFinder
 			_lat = Convert.ToDouble(lat, invC);
 			_lon = Convert.ToDouble(lon, invC);
 			if (date != null && date.Length > 0)
-				_date = ConvertToDate(date);
+				_date = Drivers.ConvertToDate(date);
 
 			_line = line;
 		}
@@ -228,6 +283,15 @@ namespace GpsTrackFinder
 	class Drivers
 	{
 		private static int fileSegment = 0;
+
+		/// <summary>
+		/// Извлечение даты из Delphi формата.</summary>
+		public static DateTime ConvertToDate(string date)
+		{
+			date = date.Replace(".", ",");
+			double time = Convert.ToDouble(date);
+			return DateTime.FromOADate(time);
+		}
 
 		/// <summary>
 		/// Расчет расстояния (в метрах) между двумя географическими координатами.</summary>
@@ -344,11 +408,11 @@ namespace GpsTrackFinder
 		// http://www.realbiker.ru/OziExplorer/fileformats.shtml
 		/// <summary>
 		/// Исправление PLT-файла.</summary>
-		public static void CorrectPlt(string fileName, ParcedData data, bool saveBackup, CorrectMode mode, DateTime lastDate)
+		public static void CorrectPlt(string fileName, ParseBase data, bool saveBackup, CorrectMode mode, DateTime lastDate)
 		{
 			try
 			{
-				if (mode == CorrectMode.maxSpeed && saveBackup)
+				if ((mode == CorrectMode.maxSpeed && saveBackup) || mode == CorrectMode.regularizeByTime)
 				{
 					string backupName = fileName.Insert(fileName.LastIndexOf(".plt"), "_backup_");
 					System.IO.File.Move(fileName, backupName);
@@ -374,7 +438,7 @@ namespace GpsTrackFinder
 						file.WriteLine(line);
 					}
 
-					foreach (string line in data.Points)
+					foreach (string line in data.getPoints())
 					{
 						file.WriteLine(line);
 					}
@@ -396,7 +460,7 @@ namespace GpsTrackFinder
 			TrackStat res = new TrackStat();
 			CCorrect correct = settings.Correct;
 			CorrectMode mode = new CorrectMode();
-			ParcedData parcedData = new ParcedData();
+			ParseBase parcedData = null;
 
 			try
 			{
@@ -424,10 +488,22 @@ namespace GpsTrackFinder
 									break;
 							}
 						}
-					}
-					double MinDist = double.MaxValue;
-					int lineNumber = 6;
+						else if(settings.Correct.RegularizeByTime)
+						{
+							mode = CorrectMode.regularizeByTime;
+						}
 
+						if (mode == CorrectMode.regularizeByTime)
+						{
+							parcedData = new ParcedDataSortable();
+						}
+						else
+						{
+							parcedData = new ParcedData();
+						}
+					}
+
+					double MinDist = double.MaxValue;
 					for (int i = 0; i < 6; i++)		// Пропускаем заголовок
 					{
 						string header = fileRead.ReadLine();
@@ -443,7 +519,7 @@ namespace GpsTrackFinder
 							string[] split = line.Split(',');
 							GpsPoint currentPos = new GpsPoint(split[0], split[1], split[4]);
 
-							// Начало нового сегмента
+							// Начало нового сегмента, вероятно нужно сохранить предидущий
 							if (split[2] == "1")
 							{
 								if (needCorrect && prevPos != null)
@@ -472,21 +548,28 @@ namespace GpsTrackFinder
 
 							if (prevPos != null)
 							{
-								double dist = calcDist(prevPos, currentPos);
-								res.Length += dist;
-								TimeSpan delta = currentPos.Date - prevPos.Date;
-								if (delta.TotalSeconds > 0) // Почему-то бывает и так
+								if (mode == CorrectMode.divideByMonth ||
+									mode == CorrectMode.divideByDay ||
+									mode == CorrectMode.divideBySegment ||
+									mode == CorrectMode.regularizeByTime)
 								{
-									double speed = dist / delta.TotalSeconds * 3.6;
-									if ((mode == CorrectMode.maxSpeed && correct.MaxSpeedFilter > speed) ||
-										(mode == CorrectMode.divideByMonth) ||
-										(mode == CorrectMode.divideByDay) ||
-										mode == CorrectMode.divideBySegment)
+									parcedData.addPoint(line);
+								}
+								else
+								{
+									double dist = calcDist(prevPos, currentPos);
+									res.Length += dist;
+									TimeSpan delta = currentPos.Date - prevPos.Date;
+									if (delta.TotalSeconds > 0) // Почему-то бывает и так
 									{
-										parcedData.addPoint(line);
+										double speed = dist / delta.TotalSeconds * 3.6;
+										if ((mode == CorrectMode.maxSpeed && correct.MaxSpeedFilter > speed))
+										{
+											parcedData.addPoint(line);
+										}
+										if (res.MaxSpeed < speed)
+											res.MaxSpeed = speed;
 									}
-									if (res.MaxSpeed < speed)
-										res.MaxSpeed = speed;
 								}
 							}
 							else if (mode != CorrectMode.none)
@@ -506,13 +589,12 @@ namespace GpsTrackFinder
 								}
 							}
 						}
-						lineNumber++;
 					}
 					if (MinDist < double.MaxValue)
 						res.MinDist = MinDist;
 					res.FileName = fileName;
 				}
-				if (parcedData.Count() > 0)
+				if (parcedData != null && parcedData.Count() > 0)
 					CorrectPlt(fileName, parcedData, correct.SaveBackup, mode, prevPos.Date);
 			}
 			catch (Exception ex)

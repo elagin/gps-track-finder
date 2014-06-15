@@ -68,6 +68,7 @@ public class CCorrect
 	private bool _saveBackup;
 	private bool _applyDivideBy;
 	private int _divideBy;
+	private bool _regularizeByTime;
 
 	public CCorrect()
 	{ }
@@ -107,6 +108,13 @@ public class CCorrect
 		get { return _divideBy; }
 		set { _divideBy = value; }
 	}
+
+	public bool RegularizeByTime
+	{
+		get { return _regularizeByTime; }
+		set { _regularizeByTime = value; }
+	}
+
 }
 
 public class Settings
@@ -272,6 +280,7 @@ public class Settings
 		this.Correct.ApplyMaxSpeedFilter = false;
 		this.Correct.ApplyDivideBy = false;
 		this.Correct.DivideBy = 0;
+		this.Correct.RegularizeByTime = false;
 	}
 
 	private void CopyFrom(Settings Obj)
@@ -288,7 +297,7 @@ public class Settings
 			this.WptFileName = Obj.WptFileName;
 		this.SearchSubFolder = Obj.SearchSubFolder;
 		this.SearchByPos = Obj.SearchByPos;
-		this._searchByWpt = Obj._searchByWpt;
+		this.SearchByWpt = Obj.SearchByWpt;
 
 		if (Obj.Correct != null)
 		{
@@ -299,6 +308,7 @@ public class Settings
 			this.Correct.ApplyFilters = Obj.Correct.ApplyFilters;
 			this.Correct.ApplyDivideBy = Obj.Correct.ApplyDivideBy;
 			this.Correct.DivideBy = Obj.Correct.DivideBy;
+			this.Correct.RegularizeByTime = Obj.Correct.RegularizeByTime;
 		}
 	}
 }

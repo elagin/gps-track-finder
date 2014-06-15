@@ -41,7 +41,7 @@ namespace GpsTrackFinder
 			if (settings.Correct.ApplyFilters)
 			{
 				checkBoxFilterEnable.CheckState = CheckState.Checked;
-				groupBoxDivide.Enabled = false;
+				groupBoxFilter.Enabled = true;
 			}
 			if (settings.Correct.ApplyMaxSpeedFilter)
 				checkBoxMaxSpeed.CheckState = CheckState.Checked;
@@ -53,15 +53,22 @@ namespace GpsTrackFinder
 			if (settings.Correct.ApplyDivideBy)
 			{
 				checkBoxDivideEnable.CheckState = CheckState.Checked;
-				groupBoxFilter.Enabled = false;
+				groupBoxDivide.Enabled = true;
 			}
 			comboBoxDivide.SelectedIndex = settings.Correct.DivideBy;
 
+			if (settings.Correct.RegularizeByTime)
+			{
+				checkBoxRegularizeByTime.CheckState = CheckState.Checked;
+				groupBoxRegularizeByTime.Enabled = true;
+			}
 		}
 
 		private void buttonStart_Click(object sender, EventArgs e)
 		{
-			if (checkBoxFilterEnable.CheckState == CheckState.Unchecked && checkBoxDivideEnable.CheckState == CheckState.Unchecked)
+			if (checkBoxFilterEnable.CheckState == CheckState.Unchecked && 
+				checkBoxDivideEnable.CheckState == CheckState.Unchecked &&
+				checkBoxRegularizeByTime.CheckState == CheckState.Unchecked)
 			{
 				string msg = "Вы не выбрали не один из способов обработки трека\r\nВернуться обратно?";
 				string caption = "Внимание";
@@ -82,6 +89,8 @@ namespace GpsTrackFinder
 				settings.Correct.ApplyDivideBy = checkBoxDivideEnable.CheckState == CheckState.Checked;
 				settings.Correct.DivideBy = comboBoxDivide.SelectedIndex;
 
+				settings.Correct.RegularizeByTime = checkBoxRegularizeByTime.CheckState == CheckState.Checked;
+
 				this.DialogResult = DialogResult.OK;
 				this.Close();
 			}
@@ -97,13 +106,16 @@ namespace GpsTrackFinder
 			if (checkBoxDivideEnable.CheckState == CheckState.Checked)
 			{
 				groupBoxFilter.Enabled = false;
+				groupBoxRegularizeByTime.Enabled = false;
 				groupBoxDivide.Enabled = true;
 				checkBoxFilterEnable.CheckState = CheckState.Unchecked;
+				checkBoxRegularizeByTime.CheckState = CheckState.Unchecked;
 			}
 			else
 			{
 				groupBoxDivide.Enabled = false;
 			}
+			checkOkButton();
 		}
 
 		private void checkBoxFilterEnable_Click(object sender, EventArgs e)
@@ -111,14 +123,42 @@ namespace GpsTrackFinder
 			if (checkBoxFilterEnable.CheckState == CheckState.Checked)
 			{
 				groupBoxDivide.Enabled = false;
+				groupBoxRegularizeByTime.Enabled = false;
 				groupBoxFilter.Enabled = true;
 				checkBoxDivideEnable.CheckState = CheckState.Unchecked;
+				checkBoxRegularizeByTime.CheckState = CheckState.Unchecked;
 			}
 			else
 			{
 				groupBoxFilter.Enabled = false;
 			}
+			checkOkButton();
+		}
 
+		private void checkBoxRegularizeByTime_Click(object sender, EventArgs e)
+		{
+			if (checkBoxRegularizeByTime.CheckState == CheckState.Checked)
+			{
+				groupBoxFilter.Enabled = false;
+				groupBoxDivide.Enabled = false;
+				groupBoxRegularizeByTime.Enabled = true;
+				checkBoxFilterEnable.CheckState = CheckState.Unchecked;
+				checkBoxDivideEnable.CheckState = CheckState.Unchecked;
+			}
+			else
+			{
+				groupBoxRegularizeByTime.Enabled = false;
+			}
+			checkOkButton();
+		}
+
+		/// <summary>
+		/// Проверяет доступность кнопки buttonStart.</summary>
+		private void checkOkButton()
+		{
+			buttonStart.Enabled = (checkBoxDivideEnable.CheckState == CheckState.Checked ||
+		checkBoxRegularizeByTime.CheckState == CheckState.Checked ||
+			checkBoxFilterEnable.CheckState == CheckState.Checked);
 		}
 	}
 }
